@@ -114,6 +114,10 @@ export class ContractService {
     }, 60000);
   }
 
+  public getMSecondsInDay() {
+    return this.secondsInDay * 1000;
+  }
+
   public onDayEnd() {
     return new Observable((observer) => {
       this.dayEndSubscribers.push(observer);
@@ -783,17 +787,14 @@ export class ContractService {
                 this.secondsInDay = secondsInDay;
                 this.startDate = startDate;
 
-                const a = moment(new Date(endDateTime));
-                const b = moment(new Date());
+                const a = new Date(endDateTime).getTime();
+                const b = Date.now();
 
-                const leftDays = a.diff(
-                  b,
-                  this.settingsApp[this.settingsApp.settings.time.display]
-                    .lowerName
-                );
-                const dateEnd = a.diff(b, "days");
+                const leftDays = Math.floor((a - b) / (this.secondsInDay * 1000));
 
-                const dateToEnd = a.diff(b);
+                const dateEnd = leftDays;
+
+                const dateToEnd = a - b;
                 const showTime = leftDays;
 
                 this.dateToEnd = dateToEnd;
@@ -815,26 +816,16 @@ export class ContractService {
       const allDaysSeconds = this.swapDaysPeriod * this.secondsInDay * 1000;
       const fullStartDate = this.startDate * 1000;
       const endDateTime = fullStartDate + allDaysSeconds;
-      const a = moment(new Date(endDateTime));
-      const b = moment(new Date());
 
-      const leftDays = a.diff(
-        b,
-        this.settingsApp[this.settingsApp.settings.time.display].lowerName
-      );
+      const a = new Date(endDateTime).getTime();
+      const b = Date.now();
 
-      const dateEnd = a.diff(
-        b,
-        this.settingsApp[this.settingsApp.settings.time.display].lowerName
-      );
+      const leftDays = Math.floor((a - b) / (this.secondsInDay * 1000));
+      const dateEnd = leftDays;
+      const dateToEnd = a - b;
+      const showTime = leftDays;
 
-      const leftDaysToShow = a.diff(b);
-
-      const showTime = {
-        h: moment.utc(leftDaysToShow).hours(),
-        m: moment.utc(leftDaysToShow).minutes(),
-        s: moment.utc(leftDaysToShow).seconds(),
-      };
+      this.dateToEnd = dateToEnd;
 
       resolve({
         startDate: fullStartDate,
@@ -1078,8 +1069,6 @@ export class ContractService {
                   .calculateSessionPayout(sessionId)
                   .call()
                   .then((result) => {
-                    let interest = 1;
-
                     return this.StakingContract.methods
                       .calculateStakingInterest(
                         sessionId,
@@ -1090,12 +1079,9 @@ export class ContractService {
                       .then((res) => {
                         return this.StakingContract.methods
                           .getAmountOutAndPenalty(sessionId, res)
-                          .call()
+                          .call({ from: this.account.address })
                           .then((resultInterest) => {
-                            interest =
-                              resultInterest[1].length < 40
-                                ? resultInterest[1]
-                                : 0;
+                            const interest = res;
 
                             return {
                               start: new Date(oneSession.start * 1000),
