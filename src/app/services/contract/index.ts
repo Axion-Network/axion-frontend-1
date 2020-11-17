@@ -492,39 +492,234 @@ export class ContractService {
   // Auction
   public getAuctionInfo() {
     const retData = {} as any;
-    return this.DailyAuctionContract.methods.currentAuctionId().call().then((auctionId) => {
-      const promises = [
-        this.DailyAuctionContract.methods.reservesOf(auctionId).call().then((result) => {
-          retData.ethPool = result[0];
-          retData.axnPool = result[1];
-        })
-      ];
-      if (this.account) {
-        promises.push(
-          this.DailyAuctionContract.methods.auctionEthBalanceOf(auctionId, this.account.address).call().then((result) => {
-            retData.currentUserBalance = result;
-          })
-        );
-      }
-      return Promise.all(promises).then(() => {
-        return retData;
+    return this.Auction.methods
+      .calculateStepsFromStart()
+      .call()
+      .then((auctionId) => {
+        const promises = [
+          this.Auction.methods
+            .reservesOf(auctionId)
+            .call()
+            .then((result) => {
+              retData.ethPool = result[0];
+              retData.axnPool = result[1];
+            }),
+        ];
+        if (this.account) {
+          promises.push(
+            this.Auction.methods
+              .auctionBetOf(auctionId, this.account.address)
+              .call()
+              .then((result) => {
+                retData.currentUserBalance = result;
+              })
+          );
+        }
+        return Promise.all(promises).then(() => {
+          return retData;
+        });
+      });
+  }
+
+  public async sendMaxETHToAuction(amount, ref?) {
+    const date = Math.round(
+      (new Date().getTime() + 24 * 60 * 60 * 1000) / 1000
+    );
+    const refLink = ref
+      ? ref.toLowerCase()
+      : "0x0000000000000000000000000000000000000000".toLowerCase();
+
+    const dataForFee = await this.web3Service.encodeFunctionCall(
+      "bet",
+      "function",
+      [
+        {
+          internalType: "uint256",
+          name: "deadline",
+          type: "uint256",
+        },
+        { internalType: "address", name: "ref", type: "address" },
+      ],
+      [date, refLink]
+    );
+
+    const gasPrice = await this.web3Service.gasPrice();
+
+    return new Promise((resolve, reject) => {
+      return this.web3Service
+        .estimateGas(
+          this.account.address,
+          this.CONTRACTS_PARAMS.Auction.ADDRESS,
+          amount,
+          dataForFee,
+          gasPrice
+        )
+        .then((res) => {
+          const feeRate = res;
+          const newAmount = new BigNumber(amount).minus(feeRate * gasPrice);
+          if (newAmount.isNegative()) {
+            reject({
+              msg: "Not enough gas",
+            });
+            return;
+          }
+          return this.Auction.methods
+            .bet(date, refLink)
+            .send({
+              from: this.account.address,
+              value: newAmount,
+              gasPrice,
+              gasLimit: feeRate,
+            })
+            .then((res) => {
+              return this.checkTransaction(res).then((res) => {
+                resolve(res);
+              });
+            });
+        });
+    });
+  }
+
+  public async sendETHToAuction(amount, ref?) {
+    const date = Math.round(
+      (new Date().getTime() + 24 * 60 * 60 * 1000) / 1000
+    );
+    const refLink = ref
+      ? ref.toLowerCase()
+      : "0x0000000000000000000000000000000000000000".toLowerCase();
+
+    return this.Auction.methods
+      .bet(date, refLink)
+      .send({
+        from: this.account.address,
+        value: amount,
+      })
+      .then((res) => {
+        return this.checkTransaction(res);
+      });
+  }
+
+  public getAuctionsData(auctionId: number, start: number) {
+    auctionId = +auctionId;
+    const oneDayInMS = this.secondsInDay * 1000;
+
+    // Next weekly auction ID
+    const newWeeklyAuctionId = 7 * Math.ceil(auctionId / 7);
+
+    const newDaysAuctionId = auctionId + 1;
+    const auctionIds = [auctionId - 1, auctionId, newDaysAuctionId];
+
+    if (newWeeklyAuctionId !== newDaysAuctionId) {
+      auctionIds.push(newWeeklyAuctionId);
+    }
+    const nowDateTS = new Date().getTime();
+    const auctionsPromises = auctionIds.map((id) => {
+      return this.Auction.methods
+        .reservesOf(id)
+        .call()
+        .then((auctionData) => {
+          const startDateTS = start + oneDayInMS * id;
+          const endDateTS = startDateTS + oneDayInMS;
+          return {
+            id: id,
+            isWeekly: newWeeklyAuctionId === id,
+            time: {
+              date: moment(startDateTS),
+              end_date: moment(endDateTS),
+              state: (nowDateTS > startDateTS && nowDateTS < endDateTS) ?
+                'progress' : (nowDateTS > endDateTS) ? 'finished' : 'feature',
+            },
+            data: {
+              axn_pool: new BigNumber(auctionData.token),
+              eth_pool: new BigNumber(auctionData.eth)
+            }
+          };
+        });
+    });
+
+    return Promise.all(auctionsPromises).then((results) => {
+      return results.sort((auction1, auction2) => {
+        return auction1.id < auction2.id ? 1 : auction1.id > auction2.id ? -1 : 0;
       });
     });
   }
 
-  public sendETHToAuction(amount) {
-    return this.DailyAuctionContract.methods.bet(
-      Math.round((new Date().getTime() + 24 * 60 * 60 * 1000) / 1000),
-      '0x1e1631579f5Dc88bB372DCD4bE64e7dB503e8416'.toLowerCase()
-    ).send({
-      from: this.account.address,
-      value: amount
-    }).then((res) => {
-      return this.checkTransaction(res);
+  public getAuctions() {
+    return new Promise((resolve) => {
+      this.Auction.methods
+        .start()
+        .call()
+        .then((start) => {
+          this.Auction.methods
+            .calculateStepsFromStart()
+            .call()
+            .then((auctionId) => {
+              const msStartTime = start * 1000;
+              this.getAuctionsData(auctionId, msStartTime).then(
+                (auctions) => {
+                  resolve(auctions);
+                }
+              );
+            });
+        });
     });
   }
 
   public getUserAuctions() {
+    return this.Auction.methods
+      .start()
+      .call()
+      .then((start) => {
+        // console.log(start);
+        return this.Auction.methods
+          .auctionsOf_(this.account.address)
+          .call()
+          .then((result) => {
+            // console.log("auctionsOf_", result);
+
+            const auctionsPromises = result.map((id) => {
+              return this.Auction.methods
+                .reservesOf(id)
+                .call()
+                .then((auctionData) => {
+                  const auctionInfo = {
+                    auctionId: id,
+                    start_date: new Date(),
+                    axn_pool: parseFloat(
+                      new BigNumber(auctionData.token).toString()
+                    ),
+                    eth_pool: parseFloat(
+                      new BigNumber(auctionData.eth).toString()
+                    ),
+                    eth_bet: new BigNumber(0),
+                    winnings: new BigNumber(0),
+                    hasWinnings: false,
+                    status: "complete",
+                  };
+                  return this.Auction.methods
+                    .auctionBetOf(id, this.account.address)
+                    .call()
+                    .then(async (accountBalance) => {
+
+                      auctionInfo.eth_bet = new BigNumber(accountBalance.eth);
+
+                      const startTS = (+start + this.secondsInDay * id) * 1000;
+                      const endTS = moment(startTS + this.secondsInDay * 1000);
+
+                      auctionInfo.start_date = new Date(startTS);
+
+                      const uniPercent = await this.Auction.methods
+                        .uniswapPercent()
+                        .call();
+
+                      // START FORMULA
+
+                      const uniswapPriceWithPercent = new BigNumber(
+                        auctionData.uniswapMiddlePrice
+                      )
+                        .times(1 + uniPercent / 100)
+                        .div(Math.pow(10, 18))
+                        .dp(0);
 
     return this.DailyAuctionContract.methods.start().call().then((start) => {
       return this.DailyAuctionContract.methods.auctionsOf_(this.account.address).call().then((result) => {

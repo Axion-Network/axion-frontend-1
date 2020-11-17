@@ -62,13 +62,18 @@ export class AuctionPageComponent implements OnDestroy {
     });
   }
 
-  public auctionWithdraw(auction) {
-    auction.withdrawProgress = true;
-    this.contractService.withdrawFromAuction(auction.auctionId).then(() => {
-      this.contractService.loadAccountInfo();
-      auction.withdrawProgress = false;
-    }).catch(() => {
-      auction.withdrawProgress = false;
+  public getUserAuctions() {
+    this.contractService.getUserAuctions().then((auctions) => {
+      auctions.sort((a, b) =>
+        new Date(a.start_date).getDate() < new Date(b.start_date).getDate()
+          ? 1
+          : -1
+      );
+
+      this.hasAuctionList = auctions.length !== 0;
+      this.auctionsList = auctions;
+
+      this.referalLink = "";
     });
   }
 

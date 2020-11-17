@@ -1,11 +1,44 @@
-<div class="content-container">
+<section class="axn-section" *ngIf="account">
+  <div class="axn-title-block">
+    <span class="axn-title">Auction</span>
+    <div
+      #tooltip2="matTooltip"
+      (click)="tooltip2.toggle()"
+      class="question"
+      mat-raised-button
+      matTooltip="
+      This auction raffles accumulated Axion tokens between users, in proportion to the participants' bid in Ethereum. The auction price can't be lower than the Uniswap price minus 10%. Any leftover Axion from the auction rolls over into the next [weekly?] auction.
 
+      When the user places a bid in ETH: 80% of the received ETH is instantly used to buy back Axion on Uniswap and the received AXN is used to replenish the Staking contract; 19% of the received ETH is the company's profit; 1% goes to The Eden Reforestation Project, with each $0.10 planting a tree.
 
-  <div class="content-block" [ngClass]="{'no-active': !account}">
-    <div class="content-block_title">
-      <span>Auction</span>
-      <span class="content-block_title_help"></span>
-    </div>
+      All Axion received from the Auction including referral bonuses will be autostaked for 14 days upon withdrawal."
+      matTooltipClass="question__tooltip"
+    ></div>
+  </div>
+
+  <div class="axn-form axn-form-base-2">
+    <div class="axn-form-block axn-form-auction">
+      <div class="axn-form-block-one axn-form-arrow p-b-none">
+        <span class="axn-form-block-one-title">Input</span>
+        <input
+          type="text"
+          *ngIf="account"
+          required="required"
+          class="axn-input"
+          placeholder="0.0"
+          onfocus="this.placeholder = ''"
+          onblur="this.placeholder = '0.0'"
+          [appBigNumber]="{
+            decimals: tokensDecimals['ETH'],
+            min: 1,
+            max: account?.balances.ETH.wei
+          }"
+          [maxValueChange]="onChangeAccount"
+          (ngModelChange)="onChangeAmount()"
+          [(ngModel)]="formsData.auctionAmount"
+          autocomplete="off"
+        />
+        <span class="axn-cheap icon icon_eth cl-purple-bg">ETH</span>
 
     <form #sendForm="ngForm" class="blocks-list blocks-list__small-size blocks-list__full-width">
       <div class="blocks-list_group blocks-list_element blocks-list_form-group width-40">
@@ -137,10 +170,90 @@
                     <span></span><span></span><span></span><span></span>
                   </span>
                 </span>
-            <span>&nbsp;&nbsp;Withdraw&nbsp;&nbsp;</span>
-          </button>
-        </td>
-      </tr>
+              </span>
+              <span class="t-fz-14">&nbsp;&nbsp;WITHDRAW&nbsp;&nbsp;</span>
+            </button>
+            <span
+              class="icon icon-flex icon__ok t-cl-green t-t-u t-fz-14 m-a"
+              *ngIf="auction.status === 'complete'"
+              >withdrawn</span
+            >
+            <span
+              class="axn-text t-cl-purple t-t-u t-fz-14"
+              *ngIf="auction.status === 'progress'"
+              >in progress</span
+            >
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="axn-section" *ngIf="account && showAuctions">
+  <div class="axn-form-block p-20">
+    <div class="axn-title-block axn-title-block-left">
+      <span class="axn-title">Auctions</span>
+    </div>
+    <table class="standard-table with-weekly" cellpadding="0" cellspacing="0" border="0">
+      <thead>
+        <tr>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>AXN in pool</th>
+          <th>ETH in pool</th>
+          <th>Completion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let auction of auctions">
+          <!-- <td>{{ auction.time.date | date: "dd.MM.yyyy" }}</td> -->
+          <td>{{ auction.time.date | date: "shortDate" }}</td>
+          <td>{{ auction.time.end_date | date: "shortDate" }}</td>
+          <td>
+            <span
+              matTooltipClass="table__tooltip"
+              mat-raised-button
+              matTooltip="{{
+                auction.data.axn_pool
+                  | bigNumberFormat: tokensDecimals['HEX2X']:true:false:18
+              }}"
+            >
+              {{
+                auction.data.axn_pool
+                  | bigNumberFormat: tokensDecimals["HEX2X"]:true:false:2
+              }}
+            </span>
+          </td>
+          <td>
+            <span
+              matTooltipClass="table__tooltip"
+              mat-raised-button
+              matTooltip="{{
+                auction.data.eth_pool
+                  | bigNumberFormat: tokensDecimals['ETH']:true:false:18
+              }}"
+            >
+              {{
+                auction.data.eth_pool
+                  | bigNumberFormat: tokensDecimals["ETH"]:true:false:2
+              }}
+            </span>
+          </td>
+          <td>
+            <span class="t-cl-purple" *ngIf="auction.time.state === 'feature'"
+              >Not started</span
+            >
+            <span class="t-cl-green" *ngIf="auction.time.state === 'progress'">
+              <ng-container *ngIf="auctionTimer">
+                <span>{{ auctionTimer }}</span>
+              </ng-container></span
+            >
+            <span class="t-cl-gray" *ngIf="auction.time.state === 'finished'"
+              >Closed</span
+            >
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
