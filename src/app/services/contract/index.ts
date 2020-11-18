@@ -1376,49 +1376,6 @@ export class ContractService {
                         .div(Math.pow(10, 18))
                         .dp(0);
 
-            const auctionsPromises = result.map((id) => {
-              return this.Auction.methods
-                .reservesOf(id)
-                .call()
-                .then((auctionData) => {
-                  const auctionInfo = {
-                    auctionId: id,
-                    start_date: new Date(),
-                    axn_pool: parseFloat(
-                      new BigNumber(auctionData.token).toString()
-                    ),
-                    eth_pool: parseFloat(
-                      new BigNumber(auctionData.eth).toString()
-                    ),
-                    eth_bet: new BigNumber(0),
-                    winnings: new BigNumber(0),
-                    hasWinnings: false,
-                    status: "complete",
-                  };
-                  return this.Auction.methods
-                    .auctionBetOf(id, this.account.address)
-                    .call()
-                    .then(async (accountBalance) => {
-                      // console.log("auctionBetOf", accountBalance);
-                      auctionInfo.eth_bet = new BigNumber(accountBalance.eth);
-                      const startTS =
-                        (+start + this.secondsInDay * (+id + 1)) * 1000;
-                      const endTS = moment(startTS + this.secondsInDay * 1000);
-                      auctionInfo.start_date = new Date(startTS);
-
-                      const uniPercent = await this.Auction.methods
-                        .uniswapPercent()
-                        .call();
-
-                      // START FORMULA
-
-                      const uniswapPriceWithPercent = new BigNumber(
-                        auctionData.uniswapMiddlePrice
-                      )
-                        .times(1 + uniPercent / 100)
-                        .div(Math.pow(10, 18))
-                        .dp(0);
-
                       const poolPrice = new BigNumber(auctionData.token).div(
                         auctionData.eth
                       );
