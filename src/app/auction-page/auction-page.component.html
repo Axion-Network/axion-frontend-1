@@ -230,7 +230,6 @@
       </thead>
       <tbody>
         <tr *ngFor="let auction of auctionsList">
-          <!-- <td>{{ auction.start_date | date: "dd.MM.yyyy" }}</td> -->
           <td>{{ auction.start_date | date: "shortDate" }}</td>
           <td>
             <span
@@ -329,8 +328,7 @@
     <table class="standard-table with-weekly" cellpadding="0" cellspacing="0" border="0">
       <thead>
         <tr>
-          <th>Start Date</th>
-          <th>End Date</th>
+          <th>Date</th>
           <th>AXN in pool</th>
           <th>ETH in pool</th>
           <th>Completion</th>
@@ -338,9 +336,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let auction of auctions">
-          <!-- <td>{{ auction.time.date | date: "dd.MM.yyyy" }}</td> -->
           <td>{{ auction.time.date | date: "shortDate" }}</td>
-          <td>{{ auction.time.end_date | date: "shortDate" }}</td>
           <td>
             <span
               matTooltipClass="table__tooltip"

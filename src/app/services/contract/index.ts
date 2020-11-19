@@ -1280,7 +1280,6 @@ export class ContractService {
             isWeekly: newWeeklyAuctionId === id,
             time: {
               date: moment(startDateTS),
-              end_date: moment(endDateTS),
               state: (nowDateTS > startDateTS && nowDateTS < endDateTS) ?
                 'progress' : (nowDateTS > endDateTS) ? 'finished' : 'feature',
             },
