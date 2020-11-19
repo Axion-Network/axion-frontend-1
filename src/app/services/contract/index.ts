@@ -1535,7 +1535,7 @@ export class ContractService {
         () => {
           this.account.snapshot = {
             user_address: this.account.address,
-            user_dont_have_hex: true,
+            nothingToClaim: false,
             hex_amount: "0",
             user_hash: "",
             hash_signature: "",
@@ -1564,7 +1564,7 @@ export class ContractService {
           () => {
             this.account.snapshot = {
               user_address: this.account.address,
-              user_dont_have_hex: true,
+              nothingToClaim: false,
               hex_amount: "0",
               user_hash: "",
               hash_signature: "",

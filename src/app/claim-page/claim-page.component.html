@@ -182,7 +182,7 @@
     </div>
   </div>
 </section>
-<section *ngIf="account ? account.snapshot?.nothingToClaim === false || account.completeClaim?.hasClaimed === false : false" class="axn-section">
+<section *ngIf="account ? !account.snapshot?.nothingToClaim && !account.completeClaim?.hasClaimed : false" class="axn-section">
   <div class="axn-title-block">
     <span class="axn-title">Freeclaim AXN with HEX</span>
     <div
