@@ -5,7 +5,7 @@
     "checkerStakingInfo": 3600000,
     "checkerBPD": 3600000,
 
-    "production": false,
+    "production": true,
     "chainsForButtonAddToMetamask": [3],
     "network": "ropsten",
     "tonkenUrl": "https://ropsten.etherscan.io/token/",
