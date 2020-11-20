@@ -198,8 +198,8 @@
               <span
                 class="icon icon-flex axn-form-block-shares-text-min"
                 [ngClass]="{
-                  'icon_ok-1': stakeDays > item.dateEnd + 86400000,
-                  icon_no: stakeDays < item.dateEnd + 86400000
+                  'icon_ok-1': hasBPD($index),
+                  icon_no: !hasBPD($index)
                 }"
                 >BPD {{ $index + 1 }}</span
               >

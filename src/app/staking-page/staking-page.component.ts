@@ -145,6 +145,10 @@ export class StakingPageComponent implements OnDestroy {
     }, this.settingsData.settings.checkerBPD);
   }
 
+  public hasBPD(index) {
+    return this.stakeDays > this.bpd[index].dateEnd + 86400000
+  }
+
   public depositList() {
     this.contractService.getAccountStakes().then((res) => {
       this.depositsLists = res;
