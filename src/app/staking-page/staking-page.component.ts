@@ -145,7 +145,7 @@ export class StakingPageComponent implements OnDestroy {
     }, this.settingsData.settings.checkerBPD);
   }
 
-  public hasBPD(index) {
+  public shouldCheckBoxForBPD(index) {
     return this.stakeDays > this.bpd[index].dateEnd + 86400000
   }
 
