@@ -2770,7 +2770,7 @@
       ]
     },
     "UniswapV2Router02": {
-      "ADDRESS": "0x7D85e23014F84E6E21d5663aCD8751bEF3562352",
+      "ADDRESS": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
       "ABI": [
         {
           "inputs": [
