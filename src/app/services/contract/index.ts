@@ -1254,17 +1254,18 @@ export class ContractService {
       });
   }
 
-  public getAuctionsData(auctionId: number, start: number) {
-    auctionId = +auctionId;
+  public getAuctionsData(todaysAuctionId: number, start: number) {
+    todaysAuctionId = +todaysAuctionId;
+
     const oneDayInMS = this.secondsInDay * 1000;
 
-    // Next weekly auction ID
-    const nextWeeklyAuctionId = 7 * Math.ceil(auctionId / 7);
+    const yesterdaysAuctionId = todaysAuctionId - 1;
+    const tomorrowsAuctionId = todaysAuctionId + 1;
+    const nextWeeklyAuctionId = 7 * Math.ceil(todaysAuctionId / 7);
+    
+    const auctionIds = [yesterdaysAuctionId, todaysAuctionId, tomorrowsAuctionId];
 
-    const tomorrowsAuctionId = auctionId + 1;
-    const auctionIds = [auctionId - 1, auctionId, tomorrowsAuctionId];
-
-    if (nextWeeklyAuctionId === auctionId) {
+    if (nextWeeklyAuctionId === todaysAuctionId) {
       auctionIds.push(nextWeeklyAuctionId + 7);
     }
 
