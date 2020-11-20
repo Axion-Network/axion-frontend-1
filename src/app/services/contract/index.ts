@@ -1264,9 +1264,10 @@ export class ContractService {
     const newDaysAuctionId = auctionId + 1;
     const auctionIds = [auctionId - 1, auctionId, newDaysAuctionId];
 
-    if (newWeeklyAuctionId !== newDaysAuctionId) {
+    if (newWeeklyAuctionId !== auctionId) {
       auctionIds.push(newWeeklyAuctionId);
     }
+
     const nowDateTS = new Date().getTime();
     const auctionsPromises = auctionIds.map((id) => {
       return this.Auction.methods
