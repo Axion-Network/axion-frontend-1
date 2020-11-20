@@ -1259,13 +1259,13 @@ export class ContractService {
     const oneDayInMS = this.secondsInDay * 1000;
 
     // Next weekly auction ID
-    const newWeeklyAuctionId = 7 * Math.ceil(auctionId / 7);
+    const nextWeeklyAuctionId = 7 * Math.ceil(auctionId / 7);
 
-    const newDaysAuctionId = auctionId + 1;
-    const auctionIds = [auctionId - 1, auctionId, newDaysAuctionId];
+    const tomorrowsAuctionId = auctionId + 1;
+    const auctionIds = [auctionId - 1, auctionId, tomorrowsAuctionId];
 
-    if (newWeeklyAuctionId !== auctionId) {
-      auctionIds.push(newWeeklyAuctionId);
+    if (nextWeeklyAuctionId === auctionId) {
+      auctionIds.push(nextWeeklyAuctionId + 7);
     }
 
     const nowDateTS = new Date().getTime();
@@ -1278,7 +1278,7 @@ export class ContractService {
           const endDateTS = startDateTS + oneDayInMS;
           return {
             id: id,
-            isWeekly: newWeeklyAuctionId === id,
+            isWeekly: id % 7 === 0,
             time: {
               date: moment(startDateTS),
               state: (nowDateTS > startDateTS && nowDateTS < endDateTS) ?
