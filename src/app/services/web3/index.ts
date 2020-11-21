@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/environment';
 import { Injectable } from "@angular/core";
 import Web3 from "web3";
 import { Observable } from "rxjs";
@@ -27,7 +28,7 @@ export class MetamaskService {
 
     this.networks.testnet = settingsApp.settings.network;
 
-    this.IS_PRODUCTION = settingsApp.settings.production;
+    this.IS_PRODUCTION = environment.production;
     this.usedNetworkVersion = settingsApp.settings.production
       ? 1
       : settingsApp.settings.net;
