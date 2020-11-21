@@ -1,4 +1,4 @@
-import { environment } from './../../../environments/environment';
+import { async } from "@angular/core/testing";
 import { MetamaskService } from "../web3";
 import { Contract } from "web3-eth-contract";
 import { Observable, Subscriber } from "rxjs";
@@ -160,7 +160,7 @@ export class ContractService {
     ];
 
     return Promise.all(promises).then((result) => {
-      const IS_PRODUCTION = environment.production;
+      const IS_PRODUCTION = this.settingsApp.settings.production;
       this.CONTRACTS_PARAMS =
         result[1][
           IS_PRODUCTION ? "mainnet" : this.settingsApp.settings.network
