@@ -16,7 +16,6 @@ export class MetamaskService {
 
   private usedNetworkVersion: number;
   private net: string;
-  private IS_PRODUCTION: boolean;
 
   private networks = {
     production: "mainnet",
@@ -28,8 +27,7 @@ export class MetamaskService {
 
     this.networks.testnet = settingsApp.settings.network;
 
-    this.IS_PRODUCTION = environment.production;
-    this.usedNetworkVersion = settingsApp.settings.production
+    this.usedNetworkVersion = environment.production
       ? 1
       : settingsApp.settings.net;
     this.net =
