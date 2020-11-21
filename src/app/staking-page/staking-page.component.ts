@@ -20,6 +20,7 @@ interface StakingInfoInterface {
 
 const FULL_PERIOD = 700;
 const AVAILABLE_DAYS_AFTER_END = 14;
+const SECONDS_PER_DAY = 86400000;
 
 @Component({
   selector: "app-staking-page",
@@ -34,7 +35,7 @@ export class StakingPageComponent implements OnDestroy {
   private accountSubscribe;
   public shareRate = 0;
   public hasBigPayDay = false;
-  public stakeDays: any;
+  public depositEndDate: any;
   public startDay = new Date();
   public share: any = {};
   public onChangeAccount: EventEmitter<any> = new EventEmitter();
@@ -146,7 +147,8 @@ export class StakingPageComponent implements OnDestroy {
   }
 
   public shouldCheckBoxForBPD(index) {
-    return this.stakeDays > this.bpd[index].dateEnd + 86400000
+    return this.formsData.depositDays > 349 &&
+           this.depositEndDate > this.bpd[index].dateEnd
   }
 
   public depositList() {
@@ -222,11 +224,9 @@ export class StakingPageComponent implements OnDestroy {
         : (new BigNumber(rate) as any);
     }
 
-    this.stakeDays =
+    this.depositEndDate =
       Date.now() +
-      this.formsData.depositDays *
-        this.contractService.settingsApp.settings.time.seconds *
-        1000;
+      this.formsData.depositDays * SECONDS_PER_DAY;
 
     const sharefull = new BigNumber(amount).div(
       new BigNumber(this.stakingContractInfo.ShareRate).div(
