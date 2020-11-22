@@ -1261,16 +1261,32 @@ export class ContractService {
 
     const yesterdaysAuctionId = todaysAuctionId - 1;
     const tomorrowsAuctionId = todaysAuctionId + 1;
-    const nextWeeklyAuctionId = 7 * Math.ceil(todaysAuctionId / 7);
+    const nextWeeklyAuctionId = 7 * Math.ceil(todaysAuctionId === 0 ? 1 : todaysAuctionId / 7);
     
-    const auctionIds = [yesterdaysAuctionId, todaysAuctionId, tomorrowsAuctionId];
+    const auctionIds = [todaysAuctionId, tomorrowsAuctionId];
+
+    if (yesterdaysAuctionId >= 0){
+      auctionIds.unshift(yesterdaysAuctionId);
+    }
 
     if (nextWeeklyAuctionId === todaysAuctionId) {
-      auctionIds.unshift(todaysAuctionId - 7);
+      const lastWeeklyAuctionId = todaysAuctionId - 7;
+
+      if (lastWeeklyAuctionId >= 0) {
+        auctionIds.unshift(lastWeeklyAuctionId);
+      }
+      
       auctionIds.push(todaysAuctionId + 7);
     } else {
-      auctionIds.unshift(nextWeeklyAuctionId - 7);
-      auctionIds.push(nextWeeklyAuctionId);
+      const lastWeeklyAuctionId = nextWeeklyAuctionId - 7;
+
+      if (lastWeeklyAuctionId !== yesterdaysAuctionId && lastWeeklyAuctionId !== todaysAuctionId) {
+        auctionIds.unshift(lastWeeklyAuctionId);
+      }
+
+      if (nextWeeklyAuctionId !== tomorrowsAuctionId){
+        auctionIds.push(nextWeeklyAuctionId);
+      }
     }
 
     const nowDateTS = new Date().getTime();
