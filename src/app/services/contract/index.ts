@@ -1266,7 +1266,10 @@ export class ContractService {
     const auctionIds = [yesterdaysAuctionId, todaysAuctionId, tomorrowsAuctionId];
 
     if (nextWeeklyAuctionId === todaysAuctionId) {
-      auctionIds.push(nextWeeklyAuctionId + 7);
+      auctionIds.unshift(todaysAuctionId - 7);
+      auctionIds.push(todaysAuctionId + 7);
+    } else {
+      auctionIds.unshift(nextWeeklyAuctionId - 7);
     }
 
     const nowDateTS = new Date().getTime();
