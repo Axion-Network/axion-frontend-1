@@ -1,27 +1,44 @@
 <header class="header" [ngClass]="{ active: isHeaderActive }">
   <div class="axn">
     <div class="header-content">
-      <img
-        *ngIf="theme === 'white'"
-        class="header-logo"
-        src="./assets/images/base/axion-logo-full.svg"
-        alt="axion logo"
-      />
-      <img
-        *ngIf="theme === 'dark'"
-        class="header-logo"
-        src="./assets/images/base/axion-logo-full-dark.svg"
-        alt="axion logo"
-      />
+      <a href="https://axion.network">
+        <img
+          *ngIf="theme === 'white'"
+          class="header-logo"
+          src="./assets/images/base/axion-logo-full.svg"
+          alt="axion logo"
+        />
+        <img
+          *ngIf="theme === 'dark'"
+          class="header-logo"
+          src="./assets/images/base/axion-logo-full-dark.svg"
+          alt="axion logo"
+        />
+      </a>
       <ul class="header-menu">
         <li *ngIf="leftDaysInfoShow" class="header-menu_item">
-          <a routerLink="claim" routerLinkActive="active-link">Claim</a>
+          <a
+            routerLink="claim"
+            routerLinkActive="active-link"
+            queryParamsHandling="merge"
+            >Claim</a
+          >
         </li>
         <li class="header-menu_item">
-          <a routerLink="auction" routerLinkActive="active-link">Auction</a>
+          <a
+            routerLink="auction"
+            routerLinkActive="active-link"
+            queryParamsHandling="merge"
+            >Auction</a
+          >
         </li>
         <li class="header-menu_item">
-          <a routerLink="staking" routerLinkActive="active-link">Staking</a>
+          <a
+            routerLink="staking"
+            routerLinkActive="active-link"
+            queryParamsHandling="merge"
+            >Staking</a
+          >
         </li>
         <li class="header-menu_item">
           <div class="icon icon-flex icon_switch-theme">

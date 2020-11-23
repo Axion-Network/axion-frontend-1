@@ -71,6 +71,12 @@
     }
   }
   tbody {
+    tr.weekly-auction {
+      td {
+        background: $clBlue;
+        color: $clWhite;
+      }
+    }
     td {
       padding: 24px 10px;
       font-size: 18px;

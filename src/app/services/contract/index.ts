@@ -1,13 +1,13 @@
-import { async } from "@angular/core/testing";
-import { MetamaskService } from "../web3";
-import { Contract } from "web3-eth-contract";
-import { Observable, Subscriber } from "rxjs";
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import BigNumber from "bignumber.js";
-import { HttpClient } from "@angular/common/http";
 import * as moment from "moment";
+import { Observable, Subscriber } from "rxjs";
+import { Contract } from "web3-eth-contract";
+import { environment } from '../../../environments/environment';
 // import { settingsData } from "../../params";
 import { AppConfig } from "../../appconfig";
+import { MetamaskService } from "../web3";
 
 // export const stakingMaxDays = 5555;
 export const stakingMaxDays = 1820;
@@ -134,7 +134,7 @@ export class ContractService {
   private initAll() {
     const promises = [
       this.httpService
-        .get(`/assets/js/settings.json?v=${new Date().getTime()}`)
+        .get(`${environment.configDomain}/settings.json`)
         .toPromise()
         .then((config) => {
           if (config) {
@@ -149,7 +149,7 @@ export class ContractService {
           this.config.setConfig(this.settingsApp);
         }),
       this.httpService
-        .get(`/assets/js/constants.json?v=${new Date().getTime()}`)
+        .get(`${environment.configDomain}/constants.json`)
         .toPromise()
         .then((result) => {
           return result;
@@ -271,7 +271,7 @@ export class ContractService {
       .call()
       .then((result) => {
         this.account.completeClaim = {
-          have_forClaim: new BigNumber(result).toNumber() > 0,
+          hasClaimed: new BigNumber(result).toNumber() > 0,
           value: new BigNumber(result).div(10000000000).toNumber(),
           valueFull: new BigNumber(result),
         };
@@ -1254,143 +1254,84 @@ export class ContractService {
       });
   }
 
-  public getAuctionsData(auctionId: number, start: number) {
-    const setDate = (itemId: number, isRemove?: boolean) => {
-      if (isRemove) {
-        return moment(
-          moment(new Date())
-            .set({
-              h: new Date(start).getHours(),
-              m: new Date(start).getMinutes(),
-              s: new Date(start).getSeconds(),
-            })
-            .subtract(auctionId - (itemId - 1), "days")
-        );
-      } else {
-        return moment(new Date())
-          .set({
-            h: new Date(start).getHours(),
-            m: new Date(start).getMinutes(),
-            s: new Date(start).getSeconds(),
-          })
-          .add(itemId + 1 - auctionId, "days");
+  public getAuctionsData(todaysAuctionId: number, start: number) {
+    todaysAuctionId = +todaysAuctionId;
+
+    const oneDayInMS = this.secondsInDay * 1000;
+
+    const yesterdaysAuctionId = todaysAuctionId - 1;
+    const tomorrowsAuctionId = todaysAuctionId + 1;
+    const nextWeeklyAuctionId = 7 * Math.ceil(todaysAuctionId === 0 ? 1 : todaysAuctionId / 7);
+    
+    const auctionIds = [todaysAuctionId, tomorrowsAuctionId];
+
+    if (yesterdaysAuctionId >= 0){
+      auctionIds.unshift(yesterdaysAuctionId);
+    }
+
+    if (nextWeeklyAuctionId === todaysAuctionId) {
+      const lastWeeklyAuctionId = todaysAuctionId - 7;
+
+      if (lastWeeklyAuctionId >= 0) {
+        auctionIds.unshift(lastWeeklyAuctionId);
       }
-    };
+      
+      auctionIds.push(todaysAuctionId + 7);
+    } else {
+      const lastWeeklyAuctionId = nextWeeklyAuctionId - 7;
 
-    return new Promise((resolve) => {
-      let auctions: any;
-
-      if (auctionId === 0) {
-        auctions = [
-          {
-            id: auctionId,
-            data: {},
-            time: {
-              state: "progress",
-              date: moment(new Date()).set({
-                h: new Date(start).getHours(),
-                m: new Date(start).getMinutes(),
-                s: new Date(start).getSeconds(),
-              }),
-            },
-          },
-        ];
-      } else {
-        auctions = [
-          {
-            id: auctionId - 1,
-            data: {},
-            time: {
-              state: "finished",
-              date: setDate(auctionId, true),
-            },
-          },
-          {
-            id: auctionId,
-            data: {},
-            time: {
-              state: "progress",
-              date: moment(new Date()).set({
-                h: new Date(start).getHours(),
-                m: new Date(start).getMinutes(),
-                s: new Date(start).getSeconds(),
-              }),
-            },
-          },
-        ];
+      if (lastWeeklyAuctionId !== yesterdaysAuctionId && lastWeeklyAuctionId !== todaysAuctionId) {
+        auctionIds.unshift(lastWeeklyAuctionId);
       }
 
-      let featureId = auctionId;
-      let nowId = auctionId;
-
-      do {
-        nowId = nowId + 1;
-        featureId = nowId / 7;
-      } while (featureId % 1 !== 0);
-
-      if (nowId === auctionId + 1) {
-        auctions.push({
-          id: auctionId + 1,
-          data: {},
-          time: {
-            state: "feature",
-            date: setDate(auctionId),
-          },
-        });
-      } else {
-        auctions.push(
-          {
-            id: auctionId + 1,
-            data: {},
-            time: {
-              state: "feature",
-              date: setDate(auctionId),
-            },
-          },
-          {
-            id: nowId,
-            data: {},
-            time: {
-              state: "feature",
-              date: setDate(nowId - 1),
-            },
-          }
-        );
+      if (nextWeeklyAuctionId !== tomorrowsAuctionId){
+        auctionIds.push(nextWeeklyAuctionId);
       }
+    }
 
-      auctions.map((t) => {
-        return this.Auction.methods
-          .reservesOf(t.id)
-          .call()
-          .then((auctionData) => {
-            const data = {
+    const nowDateTS = new Date().getTime();
+    const auctionsPromises = auctionIds.map((id) => {
+      return this.Auction.methods
+        .reservesOf(id)
+        .call()
+        .then((auctionData) => {
+          const startDateTS = start + oneDayInMS * id;
+          const endDateTS = startDateTS + oneDayInMS;
+          return {
+            id: id,
+            isWeekly: id % 7 === 0,
+            time: {
+              date: moment(startDateTS),
+              state: (nowDateTS > startDateTS && nowDateTS < endDateTS) ?
+                'progress' : (nowDateTS > endDateTS) ? 'finished' : 'feature',
+            },
+            data: {
               axn_pool: new BigNumber(auctionData.token),
-              eth_pool: new BigNumber(auctionData.eth),
-            };
-            t.data = data;
+              eth_pool: new BigNumber(auctionData.eth)
+            }
+          };
+        });
+    });
 
-            return t;
-          });
+    return Promise.all(auctionsPromises).then((results) => {
+      return results.sort((auction1, auction2) => {
+        return auction1.id < auction2.id ? 1 : auction1.id > auction2.id ? -1 : 0;
       });
-
-      auctions.sort((a, b) => (a.id < b.id ? 1 : -1));
-
-      resolve(auctions);
     });
   }
 
   public getAuctions() {
     return new Promise((resolve) => {
-      return this.Auction.methods
+      this.Auction.methods
         .start()
         .call()
         .then((start) => {
-          return this.Auction.methods
+          this.Auction.methods
             .calculateStepsFromStart()
             .call()
             .then((auctionId) => {
-              // console.log(auctionId);
-              this.getAuctionsData(Number(auctionId), start * 1000).then(
+              const msStartTime = start * 1000;
+              this.getAuctionsData(auctionId, msStartTime).then(
                 (auctions) => {
                   resolve(auctions);
                 }
@@ -1435,11 +1376,12 @@ export class ContractService {
                     .auctionBetOf(id, this.account.address)
                     .call()
                     .then(async (accountBalance) => {
-                      // console.log("auctionBetOf", accountBalance);
+
                       auctionInfo.eth_bet = new BigNumber(accountBalance.eth);
-                      const startTS =
-                        (+start + this.secondsInDay * (+id + 1)) * 1000;
+
+                      const startTS = (+start + this.secondsInDay * id) * 1000;
                       const endTS = moment(startTS + this.secondsInDay * 1000);
+
                       auctionInfo.start_date = new Date(startTS);
 
                       const uniPercent = await this.Auction.methods
@@ -1523,9 +1465,9 @@ export class ContractService {
       .then(
         (result) => {
           this.account.snapshot = result;
-          this.account.snapshot.user_dont_have_hex =
+          this.account.snapshot.nothingToClaim =
             this.account.snapshot.hex_amount <= 0;
-          this.account.snapshot.show_hex =
+          this.account.snapshot.hexAmount =
             new BigNumber(this.account.snapshot.hex_amount).toNumber() > 0
               ? new BigNumber(
                   this.account.snapshot.hex_amount.div(10000000000).toFixed(0)
@@ -1535,7 +1477,7 @@ export class ContractService {
         () => {
           this.account.snapshot = {
             user_address: this.account.address,
-            user_dont_have_hex: true,
+            nothingToClaim: true,
             hex_amount: "0",
             user_hash: "",
             hash_signature: "",
@@ -1553,9 +1495,9 @@ export class ContractService {
         .then(
           (result) => {
             this.account.snapshot = result;
-            this.account.snapshot.user_dont_have_hex =
+            this.account.snapshot.nothingToClaim =
               this.account.snapshot.hex_amount <= 0;
-            this.account.snapshot.show_hex = new BigNumber(
+            this.account.snapshot.hexAmount = new BigNumber(
               this.account.snapshot.hex_amount
             )
               .div(10000000000)
@@ -1564,7 +1506,7 @@ export class ContractService {
           () => {
             this.account.snapshot = {
               user_address: this.account.address,
-              user_dont_have_hex: true,
+              nothingToClaim: true,
               hex_amount: "0",
               user_hash: "",
               hash_signature: "",
