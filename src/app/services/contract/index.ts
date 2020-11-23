@@ -1184,12 +1184,12 @@ export class ContractService {
       ? ref.toLowerCase()
       : "0x0000000000000000000000000000000000000000".toLowerCase();
 
-    const gasLimit = this.account.balances.ETH.wei
+    const gasLimit = this.account.balances.ETH.wei;
     const gasPrice = await this.web3Service.gasPrice();
     const estimatedGas = await this.Auction.methods.bet(date, refLink)
       .estimateGas({from: this.account.address, gas:gasLimit, value: amount});
 
-    const newAmount = new BigNumber(amount).minus(estimatedGas);
+    const newAmount = new BigNumber(amount).minus(estimatedGas * gasPrice);
     if (newAmount.isNegative()) {
       throw new Error("Not enough gas")
       return;
