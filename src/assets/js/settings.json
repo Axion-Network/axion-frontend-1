@@ -10,7 +10,7 @@
         "tonkenUrl": "https://ropsten.etherscan.io/token/",	
         "net": 3,	
         "time": {	
-        "seconds": 5,	
+        "seconds": 86400,	
         "display": "days"	
         }	
     },	
