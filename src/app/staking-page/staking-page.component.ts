@@ -20,7 +20,6 @@ interface StakingInfoInterface {
 
 const FULL_PERIOD = 700;
 const AVAILABLE_DAYS_AFTER_END = 14;
-const SECONDS_PER_DAY = 86400000;
 
 @Component({
   selector: "app-staking-page",
@@ -226,7 +225,9 @@ export class StakingPageComponent implements OnDestroy {
 
     this.depositEndDate =
       Date.now() +
-      this.formsData.depositDays * SECONDS_PER_DAY;
+      this.formsData.depositDays *
+        this.settingsData.settings.time.seconds *	
+        1000;
 
     const sharefull = new BigNumber(amount).div(
       new BigNumber(this.stakingContractInfo.ShareRate).div(
