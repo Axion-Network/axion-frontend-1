@@ -1,27 +1,27 @@
 {	
     "settings": {	
-      "checkerDays": 3600000,	
-      "checkerAuctionPool": 15000,	
-      "checkerStakingInfo": 3600000,	
-      "checkerBPD": 3600000,	
-  
-      "chainsForButtonAddToMetamask": [3],	
-      "network": "ropsten",	
-      "tonkenUrl": "https://ropsten.etherscan.io/token/",	
-      "net": 3,	
-      "time": {	
+        "checkerDays": 3600000,	
+        "checkerAuctionPool": 15000,	
+        "checkerStakingInfo": 3600000,	
+        "checkerBPD": 3600000,	
+
+        "chainsForButtonAddToMetamask": [3],	
+        "network": "ropsten",	
+        "tonkenUrl": "https://ropsten.etherscan.io/token/",	
+        "net": 3,	
+        "time": {	
         "seconds": 5,	
         "display": "days"	
-      }	
+        }	
     },	
     "minutes": {	
-      "name": "Minutes",	
-      "shortName": "Min",	
-      "lowerName": "minutes"	
+        "name": "Minutes",	
+        "shortName": "Min",	
+        "lowerName": "minutes"	
     },	
     "days": {	
-      "name": "Days",	
-      "shortName": "Days",	
-      "lowerName": "days"	
+        "name": "Days",	
+        "shortName": "Days",	
+        "lowerName": "days"	
     }	
-  }
+}
