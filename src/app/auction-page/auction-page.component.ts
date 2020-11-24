@@ -58,6 +58,7 @@ export class AuctionPageComponent implements OnDestroy {
   public dataSendForm = false;
   public showAuctions = false;
   public hasAuctionList = false;
+  public hasWithdrawnAuctions = false;
   public newAuctionDay = false;
   public auctionTimer = "";
   public checker = undefined;
@@ -65,7 +66,8 @@ export class AuctionPageComponent implements OnDestroy {
   public sendAuctionProgress: boolean;
   public auctionInfo: any;
   public auctionsList: any[];
-
+  public withdrawnAuctions: any[];
+  
   public poolInfo: any = {
     axn: 0,
     eth: 0,
@@ -197,8 +199,11 @@ export class AuctionPageComponent implements OnDestroy {
           : -1
       );
 
-      this.hasAuctionList = auctions.length !== 0;
-      this.auctionsList = auctions;
+      this.auctionsList = auctions.filter(auction => auction.status === 'progress');
+      this.withdrawnAuctions = auctions.filter(auction => auction.status === 'complete');
+
+      this.hasAuctionList = this.auctionsList.length !== 0;
+      this.hasWithdrawnAuctions = this.withdrawnAuctions.length !== 0;
 
       this.referalLink = "";
     });
