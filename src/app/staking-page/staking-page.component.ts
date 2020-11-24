@@ -6,10 +6,17 @@ import {
   TemplateRef,
   ViewChild,
 } from "@angular/core";
-import { ContractService, StakingInfoInterface, stakingMaxDays } from "../services/contract";
+import { ContractService, stakingMaxDays } from "../services/contract";
 import BigNumber from "bignumber.js";
 import { AppConfig } from "../appconfig";
 import { MatDialog } from "@angular/material/dialog";
+
+interface StakingInfoInterface {
+  ShareRate: number;
+  StepsFromStart: number;
+  closestYearShares?: string;
+  closestPoolAmount?: string;
+}
 
 const FULL_PERIOD = 700;
 const AVAILABLE_DAYS_AFTER_END = 14;
@@ -50,7 +57,6 @@ export class StakingPageComponent implements OnDestroy {
   public stakingContractInfo: StakingInfoInterface = {
     ShareRate: 0,
     StepsFromStart: 0,
-    EndOfContractDay: 0,
     closestYearShares: "0",
     closestPoolAmount: "0",
   };

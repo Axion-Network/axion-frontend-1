@@ -1115,7 +1115,6 @@ export class ContractService {
                             const interest = res;
                             return this.calculateEndOfStakeDay(new Date(oneSession.end * 1000))
                               .then((endOfStake) => {
-                                console.log("EOS: ", endOfStake)
                                 return {
                                   start: new Date(oneSession.start * 1000),
                                   end: endOfStake,
