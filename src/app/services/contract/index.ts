@@ -1246,7 +1246,7 @@ export class ContractService {
       }
     }
     
-    if (nextWeeklyAuctionId !== tomorrowsAuctionId) {
+    if (nextWeeklyAuctionId !== todaysAuctionId && nextWeeklyAuctionId !== tomorrowsAuctionId) {
       auctionIds.push(nextWeeklyAuctionId);
     }
 
