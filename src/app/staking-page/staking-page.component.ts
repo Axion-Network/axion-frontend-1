@@ -50,6 +50,7 @@ export class StakingPageComponent implements OnDestroy {
   public stakingContractInfo: StakingInfoInterface = {
     ShareRate: 0,
     StepsFromStart: 0,
+    EndOfContractDay: 0,
     closestYearShares: "0",
     closestPoolAmount: "0",
   };

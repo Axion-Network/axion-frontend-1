@@ -933,11 +933,12 @@ export class ContractService {
             .call()
             .then((startContract) => {
               const stepsFromStart = this.calculateCurrentStepsFromStart(startContract, stepTimestamp);
-              const startOfNextDay = +startContract + (Math.ceil(stepsFromStart) * stepTimestamp)
-              const result = startOfNextDay - 1
+              const startOfNextDay = +startContract + (Math.ceil(stepsFromStart) * stepTimestamp);
+              const startOfNextDayMS = startOfNextDay * 1000
+              const result = startOfNextDayMS - 1;
               return {
                 key: "EndOfContractDay",
-                value: result,
+                value: result < 0 ? 0 : result,
               };
             });
         }),
