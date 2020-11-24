@@ -901,10 +901,28 @@ export class ContractService {
     });
   }
 
-  private calculateCurrentStepsFromStart(contractStartTimestamp, stepTimestamp) {
-    const currentDateInSeconds = Math.round(Date.now() / 1000)
+  private calculateStepsFromStart(currentDate, contractStartTimestamp, stepTimestamp) {
+    const currentDateInSeconds = Math.round(currentDate / 1000)
     const result = (currentDateInSeconds - contractStartTimestamp) / stepTimestamp;
     return result === Infinity ? 0 : result
+  }
+
+  private async calculateEndOfStakeDay(stakeEndDate) {
+    return this.StakingContract.methods
+      .stepTimestamp()
+      .call()
+      .then((stepTimestamp) => {
+        return this.StakingContract.methods
+          .startContract()
+          .call()
+          .then((startContract) => {
+            const stepsFromStart = this.calculateStepsFromStart(stakeEndDate, startContract, stepTimestamp);
+            const startOfNextDay = +startContract + (Math.ceil(stepsFromStart) * stepTimestamp);
+            const startOfNextDayMS = startOfNextDay * 1000
+            const result = startOfNextDayMS - 1;
+            return result < 0 ? 0 : result;
+          });
+        });
   }
 
   public getStakingContractInfo() {
@@ -917,28 +935,10 @@ export class ContractService {
             .stepTimestamp()
             .call()
             .then((stepTimestamp) => {
-              const result = this.calculateCurrentStepsFromStart(startContract, stepTimestamp);
+              const result = this.calculateStepsFromStart(Date.now(), startContract, stepTimestamp);
               return {
                 key: "StepsFromStart",
                 value: result,
-              };
-            });
-        }),
-      this.StakingContract.methods
-        .stepTimestamp()
-        .call()
-        .then((stepTimestamp) => {
-          return this.StakingContract.methods
-            .startContract()
-            .call()
-            .then((startContract) => {
-              const stepsFromStart = this.calculateCurrentStepsFromStart(startContract, stepTimestamp);
-              const startOfNextDay = +startContract + (Math.ceil(stepsFromStart) * stepTimestamp);
-              const startOfNextDayMS = startOfNextDay * 1000
-              const result = startOfNextDayMS - 1;
-              return {
-                key: "EndOfContractDay",
-                value: result < 0 ? 0 : result,
               };
             });
         }),
@@ -1113,19 +1113,22 @@ export class ContractService {
                           .call({ from: this.account.address })
                           .then((resultInterest) => {
                             const interest = res;
-
-                            return {
-                              start: new Date(oneSession.start * 1000),
-                              end: new Date(oneSession.end * 1000),
-                              shares: new BigNumber(oneSession.shares),
-                              amount: new BigNumber(oneSession.amount),
-                              isActive: oneSession.sessionIsActive,
-                              sessionId,
-                              bigPayDay: new BigNumber(result[0]),
-                              interest,
-                              penalty: new BigNumber(resultInterest[1]),
-                              forWithdraw: new BigNumber(resultInterest[0]),
-                            };
+                            return this.calculateEndOfStakeDay(new Date(oneSession.end * 1000))
+                              .then((endOfStake) => {
+                                console.log("EOS: ", endOfStake)
+                                return {
+                                  start: new Date(oneSession.start * 1000),
+                                  end: endOfStake,
+                                  shares: new BigNumber(oneSession.shares),
+                                  amount: new BigNumber(oneSession.amount),
+                                  isActive: oneSession.sessionIsActive,
+                                  sessionId,
+                                  bigPayDay: new BigNumber(result[0]),
+                                  interest,
+                                  penalty: new BigNumber(resultInterest[1]),
+                                  forWithdraw: new BigNumber(resultInterest[0]),
+                                };
+                              });
                           });
                       });
                   });
