@@ -6,17 +6,10 @@ import {
   TemplateRef,
   ViewChild,
 } from "@angular/core";
-import { ContractService, stakingMaxDays } from "../services/contract";
+import { ContractService, StakingInfoInterface, stakingMaxDays } from "../services/contract";
 import BigNumber from "bignumber.js";
 import { AppConfig } from "../appconfig";
 import { MatDialog } from "@angular/material/dialog";
-
-interface StakingInfoInterface {
-  ShareRate: number;
-  StepsFromStart: number;
-  closestYearShares?: string;
-  closestPoolAmount?: string;
-}
 
 const FULL_PERIOD = 700;
 const AVAILABLE_DAYS_AFTER_END = 14;
@@ -226,7 +219,7 @@ export class StakingPageComponent implements OnDestroy {
     this.depositEndDate =
       Date.now() +
       this.formsData.depositDays *
-        this.settingsData.settings.time.seconds *	
+        this.settingsData.settings.time.seconds *
         1000;
 
     const sharefull = new BigNumber(amount).div(
@@ -246,7 +239,7 @@ export class StakingPageComponent implements OnDestroy {
     }
     deposit.oldUpdate = new Date().getTime();
     const fullAge = deposit.end.getTime() - deposit.start.getTime();
-    const backAge = new Date().getTime() - deposit.start.getTime();
+    const backAge = this.stakingContractInfo.EndOfContractDay - deposit.start.getTime();
     deposit.progress = Math.min(Math.floor(backAge / (fullAge / 100)), 100);
     return deposit.progress;
   }

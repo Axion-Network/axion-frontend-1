@@ -23,6 +23,14 @@ interface DepositInterface {
   withdrawProgress?: boolean;
 }
 
+export interface StakingInfoInterface {
+  ShareRate: number;
+  StepsFromStart: number;
+  EndOfContractDay: number;
+  closestYearShares?: string;
+  closestPoolAmount?: string;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -893,6 +901,12 @@ export class ContractService {
     });
   }
 
+  private calculateCurrentStepsFromStart(contractStartTimestamp, stepTimestamp) {
+    const currentDateInSeconds = Math.round(Date.now() / 1000)
+    const result = (currentDateInSeconds - contractStartTimestamp) / stepTimestamp;
+    return result === Infinity ? 0 : result
+  }
+
   public getStakingContractInfo() {
     const promises = [
       this.StakingContract.methods
@@ -903,11 +917,27 @@ export class ContractService {
             .stepTimestamp()
             .call()
             .then((stepTimestamp) => {
-              const result =
-                (Math.round(Date.now() / 1000) - startContract) / stepTimestamp;
+              const result = this.calculateCurrentStepsFromStart(startContract, stepTimestamp);
               return {
                 key: "StepsFromStart",
-                value: result === Infinity ? 0 : result,
+                value: result,
+              };
+            });
+        }),
+      this.StakingContract.methods
+        .stepTimestamp()
+        .call()
+        .then((stepTimestamp) => {
+          return this.StakingContract.methods
+            .startContract()
+            .call()
+            .then((startContract) => {
+              const stepsFromStart = this.calculateCurrentStepsFromStart(startContract, stepTimestamp);
+              const startOfNextDay = +startContract + (Math.ceil(stepsFromStart) * stepTimestamp)
+              const result = startOfNextDay - 1
+              return {
+                key: "EndOfContractDay",
+                value: result,
               };
             });
         }),
