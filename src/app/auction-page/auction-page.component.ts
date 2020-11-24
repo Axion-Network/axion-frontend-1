@@ -57,16 +57,16 @@ export class AuctionPageComponent implements OnDestroy {
 
   public dataSendForm = false;
   public showAuctions = false;
-  public hasAuctionList = false;
-  public hasWithdrawnAuctions = false;
+  public hasActiveBids = false;
+  public hasWithdrawnBids = false;
   public newAuctionDay = false;
   public auctionTimer = "";
   public checker = undefined;
 
   public sendAuctionProgress: boolean;
   public auctionInfo: any;
-  public auctionsList: any[];
-  public withdrawnAuctions: any[];
+  public activeBids: any[];
+  public withdrawnBids: any[];
   
   public poolInfo: any = {
     axn: 0,
@@ -199,11 +199,11 @@ export class AuctionPageComponent implements OnDestroy {
           : -1
       );
 
-      this.auctionsList = auctions.filter(auction => auction.status === 'progress');
-      this.withdrawnAuctions = auctions.filter(auction => auction.status === 'complete');
+      this.activeBids = auctions.filter(auction => auction.status === 'progress');
+      this.withdrawnBids = auctions.filter(auction => auction.status === 'complete');
 
-      this.hasAuctionList = this.auctionsList.length !== 0;
-      this.hasWithdrawnAuctions = this.withdrawnAuctions.length !== 0;
+      this.hasActiveBids = this.activeBids.length !== 0;
+      this.hasWithdrawnBids = this.withdrawnBids.length !== 0;
 
       this.referalLink = "";
     });
@@ -352,7 +352,7 @@ export class AuctionPageComponent implements OnDestroy {
 
   // private applySort() {
   //   if (this.currentSort.field) {
-  //     this.auctionsList.sort((a, b) => {
+  //     this.activeBids.sort((a, b) => {
   //       let aValue = a[this.currentSort.field];
   //       let bValue = b[this.currentSort.field];
   //       switch (this.currentSort.field) {
@@ -379,7 +379,7 @@ export class AuctionPageComponent implements OnDestroy {
   //         : 1;
   //     });
   //   } else {
-  //     this.auctionsList.sort((a, b) => {
+  //     this.activeBids.sort((a, b) => {
   //       return Number(a.auctionId) > Number(b.auctionId) ? 1 : -1;
   //     });
   //   }

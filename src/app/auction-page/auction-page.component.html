@@ -204,7 +204,7 @@
   </div>
 </section>
 
-<section class="axn-section" *ngIf="account && showAuctions && hasAuctionList">
+<section class="axn-section" *ngIf="account && showAuctions && hasActiveBids">
   <div class="axn-form-block p-20">
     <div class="axn-title-block p-20">
       <span class="axn-title">My Bids</span>
@@ -226,7 +226,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let auction of auctionsList">
+        <tr *ngFor="let auction of activeBids">
           <td>{{ auction.start_date | date: "shortDate" }}</td>
           <td>
             <span
@@ -312,7 +312,7 @@
   </div>
 </section>
 
-<section class="axn-section" *ngIf="account && showAuctions && hasWithdrawnAuctions">
+<section class="axn-section" *ngIf="account && showAuctions && hasWithdrawnBids">
   <div class="axn-form-block p-20">
     <div class="axn-title-block p-20">
       <span class="axn-title">Withdrawn Bids</span>
@@ -332,7 +332,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let auction of withdrawnAuctions">
+        <tr *ngFor="let auction of withdrawnBids">
           <td>{{ auction.start_date | date: "shortDate" }}</td>
           <td>
             <span
