@@ -1,11 +1,11 @@
-import { Component, NgZone, ViewChild, OnInit } from "@angular/core";
-import { TransactionSuccessModalComponent } from "./components/transactionSuccessModal/transaction-success-modal.component";
-import { MetamaskErrorComponent } from "./components/metamaskError/metamask-error.component";
-import { ContractService } from "./services/contract";
+import { Component, NgZone, OnInit, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivationStart, NavigationStart, Router } from "@angular/router";
 import { CookieService } from "ngx-cookie-service";
 import { AppConfig } from "./appconfig";
+import { MetamaskErrorComponent } from "./components/metamaskError/metamask-error.component";
+import { TransactionSuccessModalComponent } from "./components/transactionSuccessModal/transaction-success-modal.component";
+import { ContractService } from "./services/contract";
 
 @Component({
   selector: "app-root",
@@ -176,6 +176,10 @@ export class AppComponent implements OnInit {
 
   public navigateToHomePage() {
     window.location.href='https://axion.network'
+  }
+
+  public downloadWhitePaper() {
+    window.open('https://axion.network/pdf/axion-whitepaper.pdf', 'blank')
   }
 
   public subscribeAccount() {
