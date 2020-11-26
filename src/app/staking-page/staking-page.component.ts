@@ -331,6 +331,7 @@ export class StakingPageComponent implements OnDestroy {
         return;
       }
     }
+    
     deposit.withdrawProgress = true;
 
     this.contractService
