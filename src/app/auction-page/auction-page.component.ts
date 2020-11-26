@@ -58,6 +58,7 @@ export class AuctionPageComponent implements OnDestroy {
   public dataSendForm = false;
   public showAuctions = false;
   public hasActiveBids = false;
+  public hasWithdrawBids = false;
   public hasWithdrawnBids = false;
   public newAuctionDay = false;
   public auctionTimer = "";
@@ -66,6 +67,7 @@ export class AuctionPageComponent implements OnDestroy {
   public sendAuctionProgress: boolean;
   public auctionInfo: any;
   public activeBids: any[];
+  public withdrawBids: any[];
   public withdrawnBids: any[];
   
   public poolInfo: any = {
@@ -200,8 +202,10 @@ export class AuctionPageComponent implements OnDestroy {
       );
 
       this.activeBids = auctions.filter(auction => auction.status === 'progress');
+      this.withdrawBids = auctions.filter(auction => auction.status === 'withdraw');
       this.withdrawnBids = auctions.filter(auction => auction.status === 'complete');
 
+      this.hasWithdrawBids = this.withdrawBids.length !== 0;
       this.hasActiveBids = this.activeBids.length !== 0;
       this.hasWithdrawnBids = this.withdrawnBids.length !== 0;
 

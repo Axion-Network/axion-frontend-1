@@ -386,6 +386,188 @@
   </div>
 </section>
 
+<section class="axn-section" *ngIf="account && showAuctions && hasWithdrawBids">
+    <div class="axn-form-block p-20">
+      <div class="axn-title-block p-20">
+        <span class="axn-title">My Bids</span>
+      </div>
+  
+      <table
+        class="standard-table"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+      >
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>AXN in pool</th>
+            <th>ETH in pool</th>
+            <th>My ETH</th>
+            <th>My AXN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let auction of withdrawBids">
+            <td>
+              <span
+                matTooltipClass="table__tooltip"
+                mat-raised-button
+                matTooltip="{{ auction.start_date | date: 'long' }}"
+              >
+                {{ auction.start_date | date: "shortDate" }}</span
+              >
+            </td>
+            <td>
+              <span
+                matTooltipClass="table__tooltip"
+                mat-raised-button
+                matTooltip="{{
+                  auction.axn_pool
+                    | bigNumberFormat: tokensDecimals['HEX2X']:true:false:18
+                }}"
+              >
+                {{
+                  auction.axn_pool
+                    | bigNumberFormat: tokensDecimals["HEX2X"]:true:false:2
+                }}
+              </span>
+            </td>
+            <td>
+              <span
+                matTooltipClass="table__tooltip"
+                mat-raised-button
+                matTooltip="{{
+                  auction.eth_pool
+                    | bigNumberFormat: tokensDecimals['ETH']:true:false:18
+                }}"
+              >
+                {{
+                  auction.eth_pool
+                    | bigNumberFormat: tokensDecimals["ETH"]:true:false:2
+                }}
+              </span>
+            </td>
+            <td>
+              <span
+                matTooltipClass="table__tooltip"
+                mat-raised-button
+                matTooltip="{{
+                  auction.eth_bet
+                    | bigNumberFormat: tokensDecimals['ETH']:true:false:18
+                }}"
+              >
+                {{
+                  auction.eth_bet
+                    | bigNumberFormat: tokensDecimals["ETH"]:true:false:2
+                }}
+              </span>
+            </td>
+            <td>
+              <span
+                matTooltipClass="table__tooltip"
+                mat-raised-button
+                matTooltip="{{
+                  auction.winnings | bigNumberFormat: false:true:false:18
+                }}"
+              >
+                {{ auction.winnings | bigNumberFormat: false:true:false:2 }}
+              </span>
+            </td>
+            <td class="action-button">
+              <button
+                *ngIf="auction.status === 'withdraw'"
+                class="axn-btn axn-btn-gray"
+                style="margin: auto"
+                (click)="auctionWithdraw(auction)"
+                [ngClass]="{ progress: auction.withdrawProgress }"
+                [disabled]="auction.withdrawProgress"
+              >
+                <span class="lds-ellipsis" *ngIf="auction.withdrawProgress">
+                  <span class="lds-ellipsis-container">
+                    <span></span><span></span><span></span><span></span>
+                  </span>
+                </span>
+                <span class="t-fz-14">&nbsp;&nbsp;WITHDRAW&nbsp;&nbsp;</span>
+              </button>
+              <span
+                class="axn-text t-cl-purple t-t-u t-fz-14"
+                *ngIf="auction.status === 'progress'"
+                >in progress</span
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+<section class="axn-section" *ngIf="account && showAuctions && hasWithdrawnBids">
+  <div class="axn-form-block p-20">
+    <div class="axn-title-block p-20">
+      <span class="axn-title">Bid History</span>
+    </div>
+
+    <table
+      class="standard-table"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+    >
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>AXN in pool</th>
+          <th>ETH in pool</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let auction of withdrawnBids">
+          <td>
+            <span
+              matTooltipClass="table__tooltip"
+              mat-raised-button
+              matTooltip="{{ auction.start_date | date: 'long' }}"
+            >
+              {{ auction.start_date | date: "shortDate" }}</span
+            >
+          </td>
+          <td>
+            <span
+              matTooltipClass="table__tooltip"
+              mat-raised-button
+              matTooltip="{{
+                auction.axn_pool
+                  | bigNumberFormat: tokensDecimals['HEX2X']:true:false:18
+              }}"
+            >
+              {{
+                auction.axn_pool
+                  | bigNumberFormat: tokensDecimals["HEX2X"]:true:false:2
+              }}
+            </span>
+          </td>
+          <td>
+            <span
+              matTooltipClass="table__tooltip"
+              mat-raised-button
+              matTooltip="{{
+                auction.eth_pool
+                  | bigNumberFormat: tokensDecimals['ETH']:true:false:18
+              }}"
+            >
+              {{
+                auction.eth_pool
+                  | bigNumberFormat: tokensDecimals["ETH"]:true:false:2
+              }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="axn-section" *ngIf="account && showAuctions">
   <div class="axn-form-block p-20">
     <div class="axn-title-block p-20">
