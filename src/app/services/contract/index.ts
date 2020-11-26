@@ -15,12 +15,13 @@ export const stakingMaxDays = 1820;
 interface DepositInterface {
   start: Date;
   end: Date;
-  shares: BigNumber;
-  amount: BigNumber;
+  shares: number;
+  amount: number;
   isActive: boolean;
   sessionId: string;
-  bigPayDay: BigNumber;
+  bigPayDay: number;
   withdrawProgress?: boolean;
+  bpdWithdraw: boolean;
 }
 
 @Injectable({
@@ -79,7 +80,6 @@ export class ContractService {
     },
   };
 
-  private dateToEnd: any;
   private swapDaysPeriod: any;
   private secondsInDay: any;
   private startDate: any;
@@ -793,11 +793,7 @@ export class ContractService {
                 const leftDays = Math.floor((a - b) / (this.secondsInDay * 1000));
 
                 const dateEnd = leftDays;
-
-                const dateToEnd = a - b;
                 const showTime = leftDays;
-
-                this.dateToEnd = dateToEnd;
 
                 return {
                   startDate: fullStartDate,
@@ -822,10 +818,7 @@ export class ContractService {
 
       const leftDays = Math.floor((a - b) / (this.secondsInDay * 1000));
       const dateEnd = leftDays;
-      const dateToEnd = a - b;
       const showTime = leftDays;
-
-      this.dateToEnd = dateToEnd;
 
       resolve({
         startDate: fullStartDate,
@@ -1086,14 +1079,15 @@ export class ContractService {
                             return {
                               start: new Date(oneSession.start * 1000),
                               end: new Date(oneSession.end * 1000),
-                              shares: new BigNumber(oneSession.shares),
-                              amount: new BigNumber(oneSession.amount),
+                              shares: oneSession.shares,
+                              amount: oneSession.amount,
                               isActive: oneSession.sessionIsActive,
                               sessionId,
-                              bigPayDay: new BigNumber(result[0]),
+                              bigPayDay: result[0],
                               interest,
-                              penalty: new BigNumber(resultInterest[1]),
-                              forWithdraw: new BigNumber(resultInterest[0]),
+                              penalty: resultInterest[1],
+                              forWithdraw: resultInterest[0],
+                              bpdWithdraw: oneSession.shares === 0 && result[0] !== 0,
                             };
                           });
                       });
@@ -1105,10 +1099,10 @@ export class ContractService {
           (allDeposits: DepositInterface[]) => {
             return {
               closed: allDeposits.filter((deposit: DepositInterface) => {
-                return new BigNumber(deposit.shares).toNumber() <= 0;
+                return deposit.shares <= 0;
               }),
               opened: allDeposits.filter((deposit: DepositInterface) => {
-                return new BigNumber(deposit.shares).toNumber() > 0;
+                return deposit.shares > 0 || deposit.bigPayDay > 0;
               }),
             };
           }
@@ -1138,7 +1132,7 @@ export class ContractService {
 
   public stakingWithdraw(sessionId) {
     return this.SubBalanceContract.methods
-      .withdraw(sessionId)
+      .withdrawPayout(sessionId)
       .call()
       .then((res) => {
         return res;

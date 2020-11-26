@@ -335,23 +335,23 @@ export class StakingPageComponent implements OnDestroy {
 
     this.contractService
       .unstake(deposit.sessionId)
-      .then((res) => {
-        // console.log("deposit unstake step 1", res);
-        this.contractService.getSessionStats(deposit.sessionId).then((res2) => {
-          // console.log("deposit unstake step 2", res2);
+      .then(() => {
+        this.depositList();
+      })
+      .catch(() => {
+        deposit.withdrawProgress = false;
+      });
+  }
 
-          if (res2 > 0) {
-            this.contractService
-              .stakingWithdraw(deposit.sessionId)
-              .then((res3) => {
-                // console.log("deposit unstake step 3", res3);
-                this.contractService.updateHEX2XBalance(true);
-                deposit.withdrawProgress = false;
-              });
-          } else {
-            this.depositList();
-          }
-        });
+  public bpdWithdraw(deposit) {
+    deposit.withdrawProgress = true;
+
+    this.contractService
+      .stakingWithdraw(deposit.sessionId)
+      .then(() => {
+        this.depositList();
+        this.contractService.updateHEX2XBalance(true);
+        deposit.withdrawProgress = false;
       })
       .catch(() => {
         deposit.withdrawProgress = false;
