@@ -691,28 +691,17 @@ export class ContractService {
       this.Auction.methods
         .calculateStepsFromStart()
         .call()
-        .then((auctionId) => {
+        .then((currentAuctionId) => {
           return this.Auction.methods
-            .reservesOf(auctionId)
+            .reservesOf(currentAuctionId)
             .call()
-            .then((res) => {
-              // console.log("res", res);
+            .then((auctionReserves) => {
               const data = {} as any;
-              // data.eth = new BigNumber(res[0])
-              //   .div(Math.pow(10, this.tokensDecimals.ETH))
-              //   .toNumber();
-              data.eth = new BigNumber(res[0]);
 
-              // console.log(
-              //   "data.eth",
-              //   data.eth,
-              //   new BigNumber(res[0])
-              //     .div(Math.pow(10, this.tokensDecimals.ETH))
-              //     .toNumber()
-              // );
+              data.eth = new BigNumber(auctionReserves[0]);
 
               data.axn = parseFloat(
-                new BigNumber(res[1])
+                new BigNumber(auctionReserves.token)
                   .div(Math.pow(10, this.tokensDecimals.HEX2X))
                   .toFixed(8)
                   .toString()
@@ -722,10 +711,13 @@ export class ContractService {
 
               let auctionPriceFromPool;
 
-              if (res[0] === "0" || res[1] === "0") {
+              if (auctionReserves.uniswapMiddlePrice !== "0") {
+                auctionPriceFromPool = new BigNumber(auctionReserves.uniswapMiddlePrice);
+              }
+              else if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
                 auctionPriceFromPool = new BigNumber(0);
               } else {
-                auctionPriceFromPool = new BigNumber(res[1]).div(res[0]);
+                auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
               }
 
               this.UniswapV2Router02.methods
@@ -746,15 +738,16 @@ export class ContractService {
                     .uniswapPercent()
                     .call()
                     .then((result) => {
-                      const uniSwapWithDiscountPrice = uniSwapRevertedPrice.times(
-                        1 + result / 100
-                      );
-                      if (auctionPriceFromPool.isZero()) {
+                      const percentage = 1 + result / 100;
+                      const uniSwapWithDiscountPrice = uniSwapRevertedPrice.times(percentage);
+                      const auctionWithDiscountPrice = auctionPriceFromPool.times(percentage);
+
+                      if (auctionWithDiscountPrice.isZero()) {
                         data.axnToEth = uniSwapWithDiscountPrice.dp(2);
                       } else {
                         data.axnToEth = BigNumber.minimum(
                           uniSwapWithDiscountPrice,
-                          auctionPriceFromPool
+                          auctionWithDiscountPrice
                         ).dp(2);
                       }
                       resolve(data);
