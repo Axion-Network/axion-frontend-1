@@ -737,16 +737,16 @@ export class ContractService {
                     .uniswapPercent()
                     .call()
                     .then((uniswapPercent) => {
-                      const percentage = 1 + uniswapPercent / 100;
+                      const discount = 1 + uniswapPercent / 100;
                       
                       if (auctionPriceFromPool.isZero()) {
-                        const uniswapDiscountedPrice = uniswapPrice.times(percentage);
+                        const uniswapDiscountedPrice = uniswapPrice.times(discount);
 
                         data.axnToEth = uniswapDiscountedPrice.dp(2);
                       } else {
                         const uniswapDiscountedAveragePrice = uniswapAveragePrice
                           .dividedBy(amount)
-                          .times(percentage);
+                          .times(discount);
 
                         data.axnToEth = BigNumber.minimum(
                           uniswapDiscountedAveragePrice,	
