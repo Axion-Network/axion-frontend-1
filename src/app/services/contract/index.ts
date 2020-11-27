@@ -697,17 +697,16 @@ export class ContractService {
             .call()
             .then((auctionReserves) => {
               const data = {} as any;
+              const amount = Math.pow(10, this.tokensDecimals.HEX2X);
 
               data.eth = new BigNumber(auctionReserves.eth);
 
               data.axn = parseFloat(
                 new BigNumber(auctionReserves.token)
-                  .div(Math.pow(10, this.tokensDecimals.HEX2X))
+                  .div(amount)
                   .toFixed(8)
                   .toString()
               );
-
-              const amount = "1000000000000000000";
 
               let auctionPriceFromPool: BigNumber;
               let uniswapAveragePrice: BigNumber;
@@ -720,7 +719,7 @@ export class ContractService {
               }
 
               this.UniswapV2Router02.methods
-                .getAmountsOut(amount, [
+                .getAmountsOut(amount.toString(), [
                   this.CONTRACTS_PARAMS.HEX2X.ADDRESS,
                   this.CONTRACTS_PARAMS.WETH.ADDRESS,
                 ])
@@ -745,7 +744,7 @@ export class ContractService {
                         data.axnToEth = uniswapDiscountedPrice.dp(2);
                       } else {
                         const uniswapDiscountedAveragePrice = uniswapAveragePrice
-                          .dividedBy(amount)
+                          .div(amount)
                           .times(discount);
 
                         data.axnToEth = BigNumber.minimum(
