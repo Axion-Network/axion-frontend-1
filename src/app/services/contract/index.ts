@@ -732,25 +732,34 @@ export class ContractService {
                   const axn = new BigNumber(value[1]).div(
                     Math.pow(10, this.tokensDecimals.HEX2X)
                   );
-                  const uniSwapRevertedPrice = new BigNumber(1).div(axn);
+                  const uniswapPrice = new BigNumber(1).div(axn);
 
-                  data.uniToEth = uniSwapRevertedPrice.dp(2);
+                  data.uniToEth = uniswapPrice.dp(2);
 
                   this.Auction.methods
                     .uniswapPercent()
                     .call()
                     .then((uniswapPercent) => {
                       const percentage = 1 + uniswapPercent / 100;
-                      const uniSwapWithDiscountPrice = uniSwapRevertedPrice.times(percentage);
-                      const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice.dividedBy(amount).times(percentage);
+                      
+                      const uniSwapWithDiscountPrice = uniswapPrice.times(percentage);
+
+                      const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice !== undefined 
+                        ? uniswapMiddlePrice.dividedBy(amount).times(percentage) 
+                        : new BigNumber(0);
 
                       if (auctionPriceFromPool.isZero()) {
                         data.axnToEth = uniSwapWithDiscountPrice.dp(2);
                       } else {
-                        data.axnToEth = BigNumber.minimum(
-                          uniswapMiddleWithDiscountPrice,	
-                          auctionPriceFromPool	
-                        ).dp(2);
+                        data.axnToEth = !uniswapMiddleWithDiscountPrice.isZero()
+                          ? BigNumber.minimum(
+                            uniswapMiddleWithDiscountPrice,	
+                            auctionPriceFromPool
+                          ).dp(2)
+                          : BigNumber.minimum(
+                            uniSwapWithDiscountPrice,	
+                            auctionPriceFromPool
+                          ).dp(2);
                       }
                       resolve(data);
                     });
