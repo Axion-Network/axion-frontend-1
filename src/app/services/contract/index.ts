@@ -698,7 +698,7 @@ export class ContractService {
             .then((auctionReserves) => {
               const data = {} as any;
 
-              data.eth = new BigNumber(auctionReserves[0]);
+              data.eth = new BigNumber(auctionReserves.eth);
 
               data.axn = parseFloat(
                 new BigNumber(auctionReserves.token)
@@ -740,15 +740,12 @@ export class ContractService {
                     .then((result) => {
                       const percentage = 1 + result / 100;
                       const uniSwapWithDiscountPrice = uniSwapRevertedPrice.times(percentage);
-                      const auctionWithDiscountPrice = auctionPriceFromPool.times(percentage);
+                      const auctionWithDiscountPrice = auctionPriceFromPool.dividedBy(amount).times(percentage);
 
                       if (auctionWithDiscountPrice.isZero()) {
                         data.axnToEth = uniSwapWithDiscountPrice.dp(2);
                       } else {
-                        data.axnToEth = BigNumber.minimum(
-                          uniSwapWithDiscountPrice,
-                          auctionWithDiscountPrice
-                        ).dp(2);
+                        data.axnToEth = auctionWithDiscountPrice.dp(2);
                       }
                       resolve(data);
                     });
