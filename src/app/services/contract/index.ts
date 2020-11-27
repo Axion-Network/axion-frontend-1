@@ -725,9 +725,7 @@ export class ContractService {
                 ])
                 .call()
                 .then((value) => {
-                  const axn = new BigNumber(value[1]).div(
-                    Math.pow(10, this.tokensDecimals.HEX2X)
-                  );
+                  const axn = new BigNumber(value[1]).div(amount);
                   const uniswapPrice = new BigNumber(1).div(axn);
 
                   data.uniToEth = uniswapPrice.dp(2);
