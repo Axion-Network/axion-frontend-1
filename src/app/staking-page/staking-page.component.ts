@@ -157,6 +157,7 @@ export class StakingPageComponent implements OnDestroy {
 
       this.applySort("opened");
       this.applySort("closed");
+      this.applySort("matured");
       window.dispatchEvent(new Event("resize"));
       this.getStakingInfo();
       this.stakingInfoChecker = true;
