@@ -710,12 +710,12 @@ export class ContractService {
               const amount = "1000000000000000000";
 
               let auctionPriceFromPool: BigNumber;
-              let uniswapMiddlePrice: BigNumber;
+              let uniswapAveragePrice: BigNumber;
 
               if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
                 auctionPriceFromPool = new BigNumber(0);
               } else {
-                uniswapMiddlePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
+                uniswapAveragePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
                 auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
               }
 
@@ -738,15 +738,15 @@ export class ContractService {
                     .call()
                     .then((uniswapPercent) => {
                       const percentage = 1 + uniswapPercent / 100;
-                      const uniSwapWithDiscountPrice = uniswapPrice.times(percentage);
+                      const uniswapDiscountedPrice = uniswapPrice.times(percentage);
 
                       if (auctionPriceFromPool.isZero()) {
-                        data.axnToEth = uniSwapWithDiscountPrice.dp(2);
+                        data.axnToEth = uniswapDiscountedPrice.dp(2);
                       } else {
-                        const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice.dividedBy(amount).times(percentage);
+                        const uniswapDiscountedAverageMiddlePrice = uniswapAveragePrice.dividedBy(amount).times(percentage);
 
                         data.axnToEth = BigNumber.minimum(
-                          uniswapMiddleWithDiscountPrice,	
+                          uniswapDiscountedAverageMiddlePrice,	
                           auctionPriceFromPool
                         ).dp(2);
                       }
