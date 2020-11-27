@@ -709,15 +709,17 @@ export class ContractService {
 
               const amount = "1000000000000000000";
 
-              let auctionPriceFromPool;
+              let auctionPriceFromPool: BigNumber;
+              let uniswapMiddlePrice: BigNumber;
 
-              if (auctionReserves.uniswapMiddlePrice !== "0") {
-                auctionPriceFromPool = new BigNumber(auctionReserves.uniswapMiddlePrice);
-              }
-              else if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
+              if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
                 auctionPriceFromPool = new BigNumber(0);
               } else {
                 auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
+              }
+
+              if (auctionReserves.uniswapMiddlePrice !== "0") {
+                uniswapMiddlePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
               }
 
               this.UniswapV2Router02.methods
@@ -737,15 +739,18 @@ export class ContractService {
                   this.Auction.methods
                     .uniswapPercent()
                     .call()
-                    .then((result) => {
-                      const percentage = 1 + result / 100;
+                    .then((uniswapPercent) => {
+                      const percentage = 1 + uniswapPercent / 100;
                       const uniSwapWithDiscountPrice = uniSwapRevertedPrice.times(percentage);
-                      const auctionWithDiscountPrice = auctionPriceFromPool.dividedBy(amount).times(percentage);
+                      const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice.dividedBy(amount).times(percentage);
 
-                      if (auctionWithDiscountPrice.isZero()) {
+                      if (auctionPriceFromPool.isZero()) {
                         data.axnToEth = uniSwapWithDiscountPrice.dp(2);
                       } else {
-                        data.axnToEth = auctionWithDiscountPrice.dp(2);
+                        data.axnToEth = BigNumber.minimum(
+                          uniswapMiddleWithDiscountPrice,	
+                          auctionPriceFromPool	
+                        ).dp(2);
                       }
                       resolve(data);
                     });
