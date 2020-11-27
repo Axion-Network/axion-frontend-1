@@ -715,11 +715,8 @@ export class ContractService {
               if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
                 auctionPriceFromPool = new BigNumber(0);
               } else {
-                auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
-              }
-
-              if (auctionReserves.uniswapMiddlePrice !== "0") {
                 uniswapMiddlePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
+                auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
               }
 
               this.UniswapV2Router02.methods
@@ -741,25 +738,17 @@ export class ContractService {
                     .call()
                     .then((uniswapPercent) => {
                       const percentage = 1 + uniswapPercent / 100;
-                      
                       const uniSwapWithDiscountPrice = uniswapPrice.times(percentage);
-
-                      const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice !== undefined 
-                        ? uniswapMiddlePrice.dividedBy(amount).times(percentage) 
-                        : new BigNumber(0);
 
                       if (auctionPriceFromPool.isZero()) {
                         data.axnToEth = uniSwapWithDiscountPrice.dp(2);
                       } else {
-                        data.axnToEth = !uniswapMiddleWithDiscountPrice.isZero()
-                          ? BigNumber.minimum(
-                            uniswapMiddleWithDiscountPrice,	
-                            auctionPriceFromPool
-                          ).dp(2)
-                          : BigNumber.minimum(
-                            uniSwapWithDiscountPrice,	
-                            auctionPriceFromPool
-                          ).dp(2);
+                        const uniswapMiddleWithDiscountPrice = uniswapMiddlePrice.dividedBy(amount).times(percentage);
+
+                        data.axnToEth = BigNumber.minimum(
+                          uniswapMiddleWithDiscountPrice,	
+                          auctionPriceFromPool
+                        ).dp(2);
                       }
                       resolve(data);
                     });
