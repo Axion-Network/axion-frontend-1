@@ -744,12 +744,12 @@ export class ContractService {
 
                         data.axnToEth = uniswapDiscountedPrice.dp(2);
                       } else {
-                        const uniswapDiscountedAverageMiddlePrice = uniswapAveragePrice
+                        const uniswapDiscountedAveragePrice = uniswapAveragePrice
                           .dividedBy(amount)
                           .times(percentage);
 
                         data.axnToEth = BigNumber.minimum(
-                          uniswapDiscountedAverageMiddlePrice,	
+                          uniswapDiscountedAveragePrice,	
                           auctionPriceFromPool
                         ).dp(2);
                       }
