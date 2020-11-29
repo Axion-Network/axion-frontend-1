@@ -182,12 +182,10 @@ export class AuctionPageComponent implements OnDestroy {
       this.auctions = res.filter(x => x.time.state !== "finished");
       this.completedAuctions = res.filter(x => x.time.state === "finished");
 
-      this.auctions.map((auction) => {
-        if (auction.time.state === "progress") {
-          this.setNewDayTimer(auction.time.date);
-          this.newAuctionDay = false;
-        }
-      });
+      let todaysAuction = this.auctions
+        .find((auction) => auction.time.state === "progress");
+      this.setNewDayTimer(todaysAuction.time.date);
+      this.newAuctionDay = false;
 
       this.showAuctions = true;
     });

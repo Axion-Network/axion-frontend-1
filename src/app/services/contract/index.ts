@@ -47,6 +47,9 @@ export class ContractService {
   private tokensDecimals: any = {
     ETH: 18,
   };
+
+  private readonly ETHER = Math.pow(10, this.tokensDecimals.ETH);
+
   public account;
   private allAccountSubscribers = [];
   private allTransactionSubscribers = [];
@@ -697,13 +700,12 @@ export class ContractService {
             .call()
             .then((auctionReserves) => {
               const data = {} as any;
-              const amount = Math.pow(10, this.tokensDecimals.HEX2X);
 
               data.eth = new BigNumber(auctionReserves.eth);
 
               data.axn = parseFloat(
                 new BigNumber(auctionReserves.token)
-                  .div(amount)
+                  .div(this.ETHER)
                   .toFixed(8)
                   .toString()
               );
@@ -719,43 +721,49 @@ export class ContractService {
               }
 
               this.UniswapV2Router02.methods
-                .getAmountsOut(amount.toString(), [
+                .getAmountsOut(this.ETHER.toString(), [
                   this.CONTRACTS_PARAMS.HEX2X.ADDRESS,
                   this.CONTRACTS_PARAMS.WETH.ADDRESS,
                 ])
                 .call()
                 .then((value) => {
-                  const axn = new BigNumber(value[1]).div(amount);
+                  const axn = new BigNumber(value[1]).div(this.ETHER);
                   const uniswapPrice = new BigNumber(1).div(axn);
 
                   data.uniToEth = uniswapPrice.dp(2);
-
+                  
                   this.Auction.methods
                     .uniswapPercent()
                     .call()
                     .then((uniswapPercent) => {
-                      const discount = 1 + uniswapPercent / 100;
-                      
-                      if (auctionPriceFromPool.isZero()) {
-                        const uniswapDiscountedPrice = uniswapPrice.times(discount);
-
-                        data.axnToEth = uniswapDiscountedPrice.dp(2);
-                      } else {
-                        const uniswapDiscountedAveragePrice = uniswapAveragePrice
-                          .div(amount)
-                          .times(discount);
-
-                        data.axnToEth = BigNumber.minimum(
-                          uniswapDiscountedAveragePrice,	
-                          auctionPriceFromPool
-                        ).dp(2);
-                      }
-                      resolve(data);
+                      data.axnToEth = this.getEthForAxnPrice(
+                        uniswapPercent, auctionPriceFromPool, uniswapPrice, uniswapAveragePrice);
                     });
+
+                  resolve(data);
                 });
             });
         });
     });
+  }
+
+  private getEthForAxnPrice(uniswapPercent: number, auctionPriceFromPool: BigNumber, uniswapPrice: BigNumber, uniswapAveragePrice: BigNumber) : BigNumber {
+    const discount = 1 + uniswapPercent / 100;
+          
+    if (auctionPriceFromPool.isZero()) {
+      const uniswapDiscountedPrice = uniswapPrice.times(discount);
+
+      return uniswapDiscountedPrice.dp(2);
+    } else {
+      const uniswapDiscountedAveragePrice = uniswapAveragePrice
+        .div(this.ETHER)
+        .times(discount);
+
+      return BigNumber.minimum(
+        uniswapDiscountedAveragePrice,	
+        auctionPriceFromPool
+      ).dp(2);
+    }
   }
 
   public getEndDateTime() {
