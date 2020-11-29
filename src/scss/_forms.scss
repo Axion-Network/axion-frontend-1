@@ -78,15 +78,17 @@
         display: grid;
         grid-template-columns: 1fr;
         grid-gap: 10px;
+        float: left;
       }
 
       &-2 {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        float: right;
+        // display: grid;
+        // grid-template-columns: repeat(2, 1fr);
 
-        @include b(900) {
-          grid-template-columns: 1fr;
-        }
+        // @include b(900) {
+        //   grid-template-columns: 1fr;
+        // }
       }
 
       &-3 {
@@ -243,6 +245,10 @@
       &-shares {
         font-weight: 300;
         text-align: left !important;
+
+        &-right {
+          text-align: right !important;
+        }
 
         &-value {
           font-size: 25px;
