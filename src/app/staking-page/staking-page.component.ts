@@ -67,9 +67,11 @@ export class StakingPageComponent implements OnDestroy {
   public currentSort: {
     opened: any;
     closed: any;
+    matured: any;
   } = {
     opened: {},
     closed: {},
+    matured: {}
   };
 
   public bpd: any = [];
