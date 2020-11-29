@@ -82,12 +82,13 @@
       }
 
       &-2 {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        float: right;
+        // display: grid;
+        // grid-template-columns: repeat(2, 1fr);
 
-        @include b(900) {
-          grid-template-columns: 1fr;
-        }
+        // @include b(900) {
+        //   grid-template-columns: 1fr;
+        // }
       }
 
       &-3 {
@@ -96,10 +97,6 @@
         @include b(900) {
           grid-template-columns: 1fr;
         }
-      }
-
-      &-4 {
-        float: right;
       }
     }
 
