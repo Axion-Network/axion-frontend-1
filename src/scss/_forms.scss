@@ -114,9 +114,9 @@
       }
 
       &-1 {
-        grid-template-columns: minmax(200px, 300px) minmax(200px, 225px) minmax(
+        grid-template-columns: minmax(200px, 335px) minmax(200px, 260px) minmax(
             400px,
-            685px
+            615px
           );
 
         @include b(900) {
