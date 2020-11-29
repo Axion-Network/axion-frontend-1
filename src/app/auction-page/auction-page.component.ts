@@ -64,7 +64,6 @@ export class AuctionPageComponent implements OnDestroy {
   public checker = undefined;
 
   public sendAuctionProgress: boolean;
-  public auctionInfo: any;
   public activeBids: any[];
   public withdrawnBids: any[];
   
@@ -101,11 +100,6 @@ export class AuctionPageComponent implements OnDestroy {
               this.getAuctions();
               this.onChangeAmount();
               this.onChangeAccount.emit();
-
-              this.contractService.getAuctionInfo().then((result) => {
-                this.auctionInfo = result;
-                window.dispatchEvent(new Event("resize"));
-              });
 
               this.getUserAuctions();
 

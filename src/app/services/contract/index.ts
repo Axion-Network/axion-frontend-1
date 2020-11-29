@@ -1146,37 +1146,6 @@ export class ContractService {
       });
   }
 
-  public getAuctionInfo() {
-    const retData = {} as any;
-    return this.Auction.methods
-      .calculateStepsFromStart()
-      .call()
-      .then((auctionId) => {
-        const promises = [
-          this.Auction.methods
-            .reservesOf(auctionId)
-            .call()
-            .then((result) => {
-              retData.ethPool = result[0];
-              retData.axnPool = result[1];
-            }),
-        ];
-        if (this.account) {
-          promises.push(
-            this.Auction.methods
-              .auctionBetOf(auctionId, this.account.address)
-              .call()
-              .then((result) => {
-                retData.currentUserBalance = result;
-              })
-          );
-        }
-        return Promise.all(promises).then(() => {
-          return retData;
-        });
-      });
-  }
-
   public async sendMaxETHToAuction(amount, ref?) {
     const date = Math.round(
       (new Date().getTime() + 24 * 60 * 60 * 1000) / 1000
