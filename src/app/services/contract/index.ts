@@ -94,6 +94,8 @@ export class ContractService {
 
   private dayEndSubscribers: Subscriber<any>[] = [];
 
+  private uniswapPercent: number;
+
   constructor(private httpService: HttpClient, private config: AppConfig) {
     setInterval(() => {
       if (!(this.secondsInDay && this.startDate)) {
@@ -215,9 +217,12 @@ export class ContractService {
   public getStaticInfo() {
     return this.initAll().then(() => {
       this.web3Service = new MetamaskService(this.config);
-      this.web3Service.getAccounts().subscribe((account: any) => {
+      this.web3Service.getAccounts().subscribe(async (account: any) => {
         if (account) {
           this.initializeContracts();
+          this.uniswapPercent = +await this.Auction.methods
+            .uniswapPercent()
+            .call();
           const promises = [this.getTokensInfo(false)];
           return Promise.all(promises);
         }
@@ -690,65 +695,57 @@ export class ContractService {
   }
 
   public getAuctionPool() {
-    return new Promise((resolve) => {
-      this.Auction.methods
+    return new Promise(async (resolve) => {
+      const currentAuctionId = await this.Auction.methods
         .calculateStepsFromStart()
-        .call()
-        .then((currentAuctionId) => {
-          return this.Auction.methods
-            .reservesOf(currentAuctionId)
-            .call()
-            .then((auctionReserves) => {
-              const data = {} as any;
+        .call();
 
-              data.eth = new BigNumber(auctionReserves.eth);
+      const auctionReserves = await this.Auction.methods
+        .reservesOf(currentAuctionId)
+        .call();
 
-              data.axn = parseFloat(
-                new BigNumber(auctionReserves.token)
-                  .div(this.ETHER)
-                  .toFixed(8)
-                  .toString()
-              );
+      const data = {} as any;
 
-              let auctionPriceFromPool: BigNumber;
-              let uniswapAveragePrice: BigNumber;
+      data.eth = new BigNumber(auctionReserves.eth);
 
-              if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
-                auctionPriceFromPool = new BigNumber(0);
-              } else {
-                uniswapAveragePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
-                auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
-              }
+      data.axn = parseFloat(
+        new BigNumber(auctionReserves.token)
+          .div(this.ETHER)
+          .toFixed(8)
+          .toString()
+      );
 
-              this.UniswapV2Router02.methods
-                .getAmountsOut(this.ETHER.toString(), [
-                  this.CONTRACTS_PARAMS.HEX2X.ADDRESS,
-                  this.CONTRACTS_PARAMS.WETH.ADDRESS,
-                ])
-                .call()
-                .then((value) => {
-                  const axn = new BigNumber(value[1]).div(this.ETHER);
-                  const uniswapPrice = new BigNumber(1).div(axn);
+      let auctionPriceFromPool: BigNumber;
+      let uniswapAveragePrice: BigNumber;
 
-                  data.uniToEth = uniswapPrice.dp(2);
-                  
-                  this.Auction.methods
-                    .uniswapPercent()
-                    .call()
-                    .then((uniswapPercent) => {
-                      data.axnToEth = this.getEthForAxnPrice(
-                        uniswapPercent, auctionPriceFromPool, uniswapPrice, uniswapAveragePrice);
-                    });
+      if (auctionReserves.eth === "0" || auctionReserves.token === "0") {
+        auctionPriceFromPool = new BigNumber(0);
+      } else {
+        uniswapAveragePrice = new BigNumber(auctionReserves.uniswapMiddlePrice);
+        auctionPriceFromPool = new BigNumber(auctionReserves.token).div(auctionReserves.eth);
+      }
 
-                  resolve(data);
-                });
-            });
-        });
+      const amountsOut = await this.UniswapV2Router02.methods
+        .getAmountsOut(this.ETHER.toString(), [
+          this.CONTRACTS_PARAMS.HEX2X.ADDRESS,
+          this.CONTRACTS_PARAMS.WETH.ADDRESS,
+        ])
+        .call();
+
+      const axn = new BigNumber(amountsOut[1]).div(this.ETHER);
+      const uniswapPrice = new BigNumber(1).div(axn);
+
+      data.uniToEth = uniswapPrice.dp(2);
+
+      data.axnToEth = this.getEthForAxnPrice(
+        auctionPriceFromPool, uniswapPrice, uniswapAveragePrice);
+
+      resolve(data);
     });
   }
 
-  private getEthForAxnPrice(uniswapPercent: number, auctionPriceFromPool: BigNumber, uniswapPrice: BigNumber, uniswapAveragePrice: BigNumber) : BigNumber {
-    const discount = 1 + uniswapPercent / 100;
+  private getEthForAxnPrice(auctionPriceFromPool: BigNumber, uniswapPrice: BigNumber, uniswapAveragePrice: BigNumber) : BigNumber {
+    const discount = 1 + this.uniswapPercent / 100;
           
     if (auctionPriceFromPool.isZero()) {
       const uniswapDiscountedPrice = uniswapPrice.times(discount);
@@ -1219,12 +1216,6 @@ export class ContractService {
       auctionIds.push(nextWeeklyAuctionId);
     }
 
-    this.Auction.methods.uniswapPercent()
-      .call()
-      .then((uniswapPercent) => {
-
-      });
-
     const nowDateTS = new Date().getTime();
     const auctionsPromises = auctionIds.map((id) => {
       return this.Auction.methods
@@ -1286,13 +1277,10 @@ export class ContractService {
       .start()
       .call()
       .then((start) => {
-        // console.log(start);
         return this.Auction.methods
           .auctionsOf_(this.account.address)
           .call()
           .then((result) => {
-            // console.log("auctionsOf_", result);
-
             const auctionsPromises = result.map((id) => {
               return this.Auction.methods
                 .reservesOf(id)
@@ -1324,16 +1312,12 @@ export class ContractService {
 
                       auctionInfo.start_date = new Date(startTS);
 
-                      const uniPercent = await this.Auction.methods
-                        .uniswapPercent()
-                        .call();
-
                       // START FORMULA
 
                       const uniswapPriceWithPercent = new BigNumber(
                         auctionData.uniswapMiddlePrice
                       )
-                        .times(1 + uniPercent / 100)
+                        .times(1 + this.uniswapPercent / 100)
                         .div(Math.pow(10, 18))
                         .dp(0);
 
