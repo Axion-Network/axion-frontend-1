@@ -1252,23 +1252,16 @@ export class ContractService {
   }
 
   public getAuctions() {
-    return new Promise((resolve) => {
-      this.Auction.methods
+    return new Promise(async (resolve) => {
+      const startMs = await this.Auction.methods
         .start()
-        .call()
-        .then((start) => {
-          this.Auction.methods
-            .calculateStepsFromStart()
-            .call()
-            .then((auctionId) => {
-              const msStartTime = start * 1000;
-              this.getAuctionsData(auctionId, msStartTime).then(
-                (auctions) => {
-                  resolve(auctions);
-                }
-              );
-            });
-        });
+        .call() * 1000;
+
+      const auctionId = await this.Auction.methods
+        .calculateStepsFromStart()
+        .call();
+
+      resolve(await this.getAuctionsData(auctionId, startMs));
     });
   }
 
