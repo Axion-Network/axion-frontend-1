@@ -82,7 +82,7 @@
       }
 
       &-2 {
-        display: grid;	        
+        display: grid;
         grid-template-columns: repeat(2, 1fr);
 
         @include b(900) {
@@ -114,9 +114,9 @@
       }
 
       &-1 {
-        grid-template-columns: minmax(200px, 335px) minmax(200px, 260px) minmax(
-            400px,
-            615px
+        grid-template-columns: minmax(200px, 440px) minmax(200px, 220px) minmax(
+            300px,
+            550px
           );
 
         @include b(900) {
