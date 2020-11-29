@@ -38,7 +38,7 @@
     }
 
     &-staking {
-      min-height: 270px;
+      min-height: 280px;
       height: max-content;
     }
 
@@ -109,9 +109,9 @@
       }
 
       &-1 {
-        grid-template-columns: minmax(250px, 490px) minmax(200px, 270px) minmax(
-            250px,
-            450px
+        grid-template-columns: minmax(200px, 300px) minmax(200px, 225px) minmax(
+            400px,
+            685px
           );
 
         @include b(900) {
