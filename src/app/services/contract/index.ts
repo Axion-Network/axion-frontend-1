@@ -1242,6 +1242,12 @@ export class ContractService {
       auctionIds.push(nextWeeklyAuctionId);
     }
 
+    this.Auction.methods.uniswapPercent()
+      .call()
+      .then((uniswapPercent) => {
+
+      });
+
     const nowDateTS = new Date().getTime();
     const auctionsPromises = auctionIds.map((id) => {
       return this.Auction.methods
@@ -1250,6 +1256,10 @@ export class ContractService {
         .then((auctionData) => {
           const startDateTS = start + oneDayInMS * id;
           const endDateTS = startDateTS + oneDayInMS;
+          const axnInPool = new BigNumber(auctionData.token);
+          const ethInPool = new BigNumber(auctionData.eth);
+          const averagePrice = new BigNumber(auctionData.uniswapMiddlePrice);
+
           return {
             id: id,
             isWeekly: id % 7 === 0,
@@ -1259,8 +1269,8 @@ export class ContractService {
                 'progress' : (nowDateTS > endDateTS) ? 'finished' : 'feature',
             },
             data: {
-              axn_pool: new BigNumber(auctionData.token),
-              eth_pool: new BigNumber(auctionData.eth)
+              axn_pool: axnInPool,
+              eth_pool: ethInPool
             }
           };
         });

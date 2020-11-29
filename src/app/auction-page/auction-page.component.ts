@@ -75,6 +75,7 @@ export class AuctionPageComponent implements OnDestroy {
 
   public auctions: any;
   public auctionsIntervals: [];
+  public completedAuctions: any;
 
   public currentSort: any = {};
 
@@ -177,8 +178,9 @@ export class AuctionPageComponent implements OnDestroy {
   }
 
   public getAuctions() {
-    this.contractService.getAuctions().then((res) => {
-      this.auctions = res;
+    this.contractService.getAuctions().then((res: Array<any>) => {
+      this.auctions = res.filter(x => x.time.state !== "finished");
+      this.completedAuctions = res.filter(x => x.time.state === "finished");
 
       this.auctions.map((auction) => {
         if (auction.time.state === "progress") {
