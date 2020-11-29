@@ -46,6 +46,7 @@ export class StakingPageComponent implements OnDestroy {
   public depositsLists: {
     opened?: any;
     closed?: any;
+    matured?: any;
   };
   @ViewChild("depositForm", { static: false }) depositForm;
 
