@@ -1038,77 +1038,71 @@ export class ContractService {
     return bpd;
   }
 
-  public getAccountStakes(): Promise<{
+  public async getAccountStakes(): Promise<{
     closed: DepositInterface[];
     opened: DepositInterface[];
     matured: DepositInterface[];
   }> {
-    return this.StakingContract.methods
+    const sessions = await this.StakingContract.methods
       .sessionsOf_(this.account.address)
-      .call()
-      .then((sessions) => {
-        const nowMs = Date.now();
-        const sessionsPromises: DepositInterface[] = sessions.map(
-          (sessionId) => {
-            return this.StakingContract.methods
-              .sessionDataOf(this.account.address, sessionId)
-              .call()
-              .then((oneSession) => {
-                return this.SubBalanceContract.methods
-                  .calculateSessionPayout(sessionId)
-                  .call()
-                  .then((result) => {
-                    return this.StakingContract.methods
-                      .calculateStakingInterest(
-                        sessionId,
-                        this.account.address,
-                        oneSession.shares
-                      )
-                      .call()
-                      .then((res) => {
-                        return this.StakingContract.methods
-                          .getAmountOutAndPenalty(sessionId, res)
-                          .call({ from: this.account.address })
-                          .then((resultInterest) => {
-                            const interest = res;
-                            const endMs = oneSession.end * 1000;
+      .call();
 
-                            return {
-                              start: new Date(oneSession.start * 1000),
-                              end: new Date(endMs),
-                              shares: oneSession.shares,
-                              amount: oneSession.amount,
-                              isActive: oneSession.sessionIsActive,
-                              sessionId,
-                              bigPayDay: result[0],
-                              interest,
-                              penalty: resultInterest[1],
-                              forWithdraw: resultInterest[0],
-                              bpdWithdraw: oneSession.shares === 0 && result[0] !== 0,
-                              isMatured: nowMs > endMs
-                            };
-                          });
-                      });
-                  });
-              });
-          }
-        );
-        return Promise.all(sessionsPromises).then(
-          (allDeposits: DepositInterface[]) => {
-            return {
-              closed: allDeposits.filter((deposit: DepositInterface) => {
-                return deposit.shares <= 0 && !deposit.bpdWithdraw;
-              }),
-              opened: allDeposits.filter((deposit: DepositInterface) => {
-                return !deposit.isMatured && deposit.shares > 0 || deposit.bpdWithdraw;
-              }),
-              matured: allDeposits.filter((deposit: DepositInterface) => {
-                return deposit.isMatured && deposit.shares > 0 || deposit.bpdWithdraw;
-              })
-            };
-          }
-        );
-      });
+    const nowMs = Date.now();
+    const sessionsPromises: DepositInterface[] = sessions.map(
+      async (sessionId) => {
+        const oneSession = await this.StakingContract.methods
+          .sessionDataOf(this.account.address, sessionId)
+          .call();
+
+        const bigPayDay = await this.SubBalanceContract.methods
+          .calculateSessionPayout(sessionId)
+          .call();
+
+        const stakingInterest = await this.StakingContract.methods
+          .calculateStakingInterest(
+            sessionId,
+            this.account.address,
+            oneSession.shares
+          )
+          .call();
+
+        const payoutAndPenalty = await this.StakingContract.methods
+          .getAmountOutAndPenalty(sessionId, stakingInterest)
+          .call({ from: this.account.address });
+
+        const interest = stakingInterest;
+        const endMs = oneSession.end * 1000;
+
+        return {
+          start: new Date(oneSession.start * 1000),
+          end: new Date(endMs),
+          shares: oneSession.shares,
+          amount: oneSession.amount,
+          isActive: oneSession.sessionIsActive,
+          sessionId,
+          bigPayDay: bigPayDay[0],
+          interest,
+          penalty: payoutAndPenalty[1],
+          forWithdraw: payoutAndPenalty[0],
+          bpdWithdraw: oneSession.shares === 0 && bigPayDay[0] !== 0,
+          isMatured: nowMs > endMs
+        };
+      }
+    );
+    
+    const allDeposits = await Promise.all(sessionsPromises);
+
+    return {
+      closed: allDeposits.filter((deposit: DepositInterface) => {
+        return deposit.shares <= 0 && !deposit.bpdWithdraw;
+      }),
+      opened: allDeposits.filter((deposit: DepositInterface) => {
+        return !deposit.isMatured && deposit.shares > 0 || deposit.bpdWithdraw;
+      }),
+      matured: allDeposits.filter((deposit: DepositInterface) => {
+        return deposit.isMatured && deposit.shares > 0 || deposit.bpdWithdraw;
+      })
+    };
   }
 
   public unstake(sessionId) {

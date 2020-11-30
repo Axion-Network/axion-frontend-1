@@ -318,7 +318,7 @@ export class StakingPageComponent implements OnDestroy {
 
   public depositWithdraw(deposit, withoutConfirm?) {
     if (!withoutConfirm) {
-      if (!deposit.penalty.isZero()) {
+      if (deposit.penalty !== 0) {
         const openedWarning = this.dialog.open(this.warningModal, {});
         const oneDayInSeconds = this.contractService.getMSecondsInDay();
         const nowTS = Date.now();
