@@ -1097,7 +1097,7 @@ export class ContractService {
           (allDeposits: DepositInterface[]) => {
             return {
               closed: allDeposits.filter((deposit: DepositInterface) => {
-                return deposit.shares <= 0;
+                return deposit.shares <= 0 && !deposit.bpdWithdraw;
               }),
               opened: allDeposits.filter((deposit: DepositInterface) => {
                 return !deposit.isMatured && deposit.shares > 0 || deposit.bpdWithdraw;
