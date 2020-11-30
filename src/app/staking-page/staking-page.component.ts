@@ -173,6 +173,10 @@ export class StakingPageComponent implements OnDestroy {
         bigPayDay: openedDeposits.map(x => x.bigPayDay).reduce((total, x) => total.plus(x))
       };
 
+      this.openedDepositTotals.total = this.openedDepositTotals.principal
+        .plus(this.openedDepositTotals.interest)
+        .plus(this.openedDepositTotals.bigPayDay);
+
       this.applySort("opened");
       this.applySort("closed");
       this.applySort("matured");
