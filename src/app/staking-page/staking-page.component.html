@@ -284,9 +284,7 @@
 
 <section
   class="axn-section"
-  *ngIf="depositsLists?.opened.length 
-    || depositsLists?.matured.length 
-    && tokensDecimals"
+  *ngIf="openedDepositTotals && tokensDecimals"
 >
   <div class="axn-form-block p-20">
     <div class="axn-title-block p-20">

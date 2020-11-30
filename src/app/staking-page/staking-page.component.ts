@@ -166,16 +166,18 @@ export class StakingPageComponent implements OnDestroy {
 
       let openedDeposits : DepositInterface[] = res.opened.concat(res.matured);
 
-      this.openedDepositTotals = { 
-        principal: openedDeposits.map(x => x.amount).reduce((total, x) => total.plus(x)),
-        interest: openedDeposits.map(x => x.interest).reduce((total, x) => total.plus(x)),
-        shares: openedDeposits.map(x => x.shares).reduce((total, x) => total.plus(x)),
-        bigPayDay: openedDeposits.map(x => x.bigPayDay).reduce((total, x) => total.plus(x))
-      };
-
-      this.openedDepositTotals.total = this.openedDepositTotals.principal
-        .plus(this.openedDepositTotals.interest)
-        .plus(this.openedDepositTotals.bigPayDay);
+      if (openedDeposits.length) {
+        this.openedDepositTotals = { 
+          principal: openedDeposits.map(x => x.amount).reduce((total, x) => total.plus(x)),
+          interest: openedDeposits.map(x => x.interest).reduce((total, x) => total.plus(x)),
+          shares: openedDeposits.map(x => x.shares).reduce((total, x) => total.plus(x)),
+          bigPayDay: openedDeposits.map(x => x.bigPayDay).reduce((total, x) => total.plus(x))
+        };
+  
+        this.openedDepositTotals.total = this.openedDepositTotals.principal
+          .plus(this.openedDepositTotals.interest)
+          .plus(this.openedDepositTotals.bigPayDay);
+      }
 
       this.applySort("opened");
       this.applySort("closed");
