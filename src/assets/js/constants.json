@@ -4306,7 +4306,7 @@
   },
   "ropsten": {
     "H2T": {
-      "ADDRESS": "0x3CF32c1a8FA55a7256973589d725d6ecFb2261Cd",
+      "ADDRESS": "0x76d6C333a2F14009AF483691dFc49345371b20BF",
       "ABI": [
         {
           "inputs": [
