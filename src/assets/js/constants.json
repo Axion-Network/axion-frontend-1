@@ -4511,7 +4511,7 @@
       "ADDRESS": "0xc778417E063141139Fce010982780140Aa0cD5Ab"
     },
     "HEX2X": {
-      "ADDRESS": "0xD25d9233Df9D6902928B95850960c1D1f527a525",
+      "ADDRESS": "0xfd18792Fc3664c7A187b9Ff3cb7ca3ecEA1a706F",
       "ABI": [
         {
           "inputs": [
@@ -5168,7 +5168,7 @@
       ]
     },
     "NativeSwap": {
-      "ADDRESS": "0x76DBDd856A9487517449a3C7E29F9e39D5043069",
+      "ADDRESS": "0x429619A66A00184B3B8b17711BE0BF857e6E60f3",
       "ABI": [
         {
           "inputs": [],
@@ -5314,7 +5314,7 @@
       ]
     },
     "Staking": {
-      "ADDRESS": "0x1b4717Ac201799553EF00c0EBDe8CDCF369A9e9e",
+      "ADDRESS": "0x257F3473E05Fb68A6AD78a030Aa089C59D801584",
       "ABI": [
         {
           "inputs": [],
@@ -5785,7 +5785,7 @@
       ]
     },
     "BPD": {
-      "ADDRESS": "0xF46D7D341074dF1b1f66E89E10230C0457731A5B",
+      "ADDRESS": "0x850AF145C485868825B328b887068B9b73F5be99",
       "ABI": [
         {
           "inputs": [
@@ -6112,7 +6112,7 @@
       ]
     },
     "ForeignSwap": {
-      "ADDRESS": "0x1f60A2e224fDF71e2c7aC3187adAf5eD30889b62",
+      "ADDRESS": "0x5559dc11a872F4FcD1C36Ce369612D5D92C81A65",
       "ABI": [
         {
           "inputs": [
@@ -6566,7 +6566,7 @@
       ]
     },
     "SubBalance": {
-      "ADDRESS": "0x587dC18E207C6d3a1F5D37d256562d2D23120A49",
+      "ADDRESS": "0xD4207Cb1E1a4Eb1f4672da224f538AbB6d6e8D31",
       "ABI": [
         {
           "inputs": [
@@ -7772,7 +7772,7 @@
       ]
     },
     "Auction": {
-      "ADDRESS": "0xE0eb178e6260d7A3fa06Ccf9c422eFDb76A47f2e",
+      "ADDRESS": "0x69fbDc9A4727720e36fF1EA4db0582E8FE38F4B6",
       "ABI": [
         {
           "inputs": [],
