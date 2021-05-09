@@ -8,7 +8,7 @@
         "chainsForButtonAddToMetamask": [3],	
         "network": "ropsten",	
         "tonkenUrl": "https://ropsten.etherscan.io/token/",	
-        "net": 97,	
+        "net": 3,	
         "time": {	
             "seconds": 300,	
             "display": "days"	
