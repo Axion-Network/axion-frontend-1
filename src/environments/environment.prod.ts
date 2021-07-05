@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
-  configDomain: 'https://static.axion.network/mainnet',
+  production: false,
+  configDomain: 'assets/js',
   freeClaimApi: 'https://api.axion.network'
 };
